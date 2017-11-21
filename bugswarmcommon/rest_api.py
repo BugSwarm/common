@@ -15,15 +15,7 @@ _EMAIL_SUBSCRIBERS_RESOURCE = 'emailSubscribers'
 ###################################
 
 def insert_artifact(artifact):
-    if artifact is None:
-        raise ValueError
-    log.debug('Trying to insert artifact.')
-    resp = _perform_post(_artifacts_endpoint(), artifact)
-    if resp.status_code == 422:
-        log.error('The artifact was not added because it failed validation.')
-        log.error(pprint.pformat(artifact))
-        return False
-    return True
+    return _insert(artifact, _artifacts_endpoint(), 'artifact')
 
 
 def find_artifact(image_tag):
@@ -34,11 +26,11 @@ def find_artifact(image_tag):
 
 
 def list_artifacts():
-    return _perform_get(_artifacts_endpoint())
+    return _list(_artifacts_endpoint())
 
 
 def count_artifacts():
-    raise NotImplementedError
+    return _count(_artifacts_endpoint())
 
 
 ###################################
@@ -46,15 +38,7 @@ def count_artifacts():
 ###################################
 
 def insert_email_subscriber(email_subscriber):
-    if email_subscriber is None:
-        raise ValueError
-    log.debug('Trying to insert email subscriber.')
-    resp = _perform_post(_email_subscribers_endpoint(), email_subscriber)
-    if resp.status_code == 422:
-        log.error('The email subscriber was not added because it failed validation.')
-        log.error(pprint.pformat(email_subscriber))
-        return False
-    return True
+    return _insert(email_subscriber, _email_subscribers_endpoint(), 'email subscriber')
 
 
 def find_email_subscriber(email):
@@ -65,11 +49,11 @@ def find_email_subscriber(email):
 
 
 def list_email_subscribers():
-    return _perform_get(_email_subscribers_endpoint())
+    return _list(_email_subscribers_endpoint())
 
 
 def count_email_subscribers():
-    raise NotImplementedError
+    return _count(_email_subscribers_endpoint())
 
 
 ###################################
@@ -96,7 +80,42 @@ def _perform_post(endpoint, data):
 ###################################
 
 def _endpoint(resource):
+    if resource is None:
+        raise ValueError
     return '/'.join([_BASE_URL, resource])
+
+
+def _insert(entity, endpoint, singular_entity_name='entity'):
+    if entity is None:
+        raise ValueError
+    if endpoint is None:
+        raise ValueError
+    if singular_entity_name is None:
+        raise ValueError
+    log.debug('Trying to insert', singular_entity_name + '.')
+    resp = _perform_post(endpoint, entity)
+    if resp.status_code == 422:
+        log.error('The', singular_entity_name, 'was not added because it failed validation.')
+        log.error(pprint.pformat(entity))
+        return False
+    return True
+
+
+# TODO: Handle pagination.
+def _list(endpoint):
+    if endpoint is None:
+        raise ValueError
+    return _perform_get(endpoint)
+
+
+def _count(endpoint):
+    if endpoint is None:
+        raise ValueError
+    resp = _perform_get(endpoint)
+    result = resp.json()
+    if result is not None and '_meta' in result and 'total' in result['_meta']:
+        return result['_meta']['total']
+    return -1
 
 
 def _artifacts_endpoint():
