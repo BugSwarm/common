@@ -39,6 +39,10 @@ def count_artifacts():
     raise NotImplementedError
 
 
+##############################
+# Convenience REST methods
+##############################
+
 def _perform_get(endpoint):
     return requests.get(endpoint)
 
@@ -51,6 +55,10 @@ def _perform_post(endpoint, data):
 def _endpoint(resource):
     return '/'.join([BASE_URL, resource])
 
+
+##############################
+# Convenience methods
+##############################
 
 def _artifacts_endpoint():
     return _endpoint(ARTIFACTS_RESOURCE)
