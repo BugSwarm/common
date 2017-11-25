@@ -97,6 +97,7 @@ def _insert(entity, endpoint, singular_entity_name='entity'):
     if resp.status_code == 422:
         log.error('The', singular_entity_name, 'was not added because it failed validation.')
         log.error(pprint.pformat(entity))
+        log.error(resp.content)
         return False
     return True
 
