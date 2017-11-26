@@ -75,6 +75,14 @@ def _perform_post(endpoint, data):
     return resp
 
 
+def _perform_patch(endpoint, data):
+    headers = {'Content-Type': 'application/json'}
+    resp = requests.patch(endpoint, json.dumps(data), headers=headers)
+    log.debug(resp.url)
+    log.debug(resp.content)
+    return resp
+
+
 ###################################
 # Convenience methods
 ###################################
