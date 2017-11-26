@@ -58,7 +58,7 @@ def count_email_subscribers():
 
 def confirm_email_subscriber(email):
     # Set confirmed to True and clear the confirmation token.
-    updates = {'confirmed': True, 'confirmation_token': ''}
+    updates = {'confirmed': True, 'confirm_token': ''}
     return _patch(_email_subscriber_email_endpoint(email), updates)
 
 
@@ -103,7 +103,11 @@ def _patch(endpoint, data):
 
 
 def _delete(endpoint):
-    resp = requests.delete(endpoint)
+    # First get the entity's etag.
+    etag = _get(endpoint).json()['_etag']
+    headers = {'If-Match': etag}
+    # Now delete the entity.
+    resp = requests.delete(endpoint, headers=headers)
     if not resp.ok:
         log.error(resp.url)
         log.error(resp.content)
