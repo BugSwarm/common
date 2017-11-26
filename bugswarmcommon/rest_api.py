@@ -56,30 +56,45 @@ def count_email_subscribers():
     return _count(_email_subscribers_endpoint())
 
 
+def confirm_email_subscriber(email):
+    # Set confirmed to True and clear the confirmation token.
+    updates = {'confirmed': True, 'confirmation_token': ''}
+    return _perform_patch(_email_subscriber_email_endpoint(email), updates)
+
+
 ###################################
 # Convenience REST methods
 ###################################
 
 def _perform_get(endpoint):
     resp = requests.get(endpoint)
-    log.debug(resp.url)
-    log.debug(resp.content)
+    if not resp.ok:
+        log.error(resp.url)
+        log.error(resp.content)
     return resp
 
 
 def _perform_post(endpoint, data):
     headers = {'Content-Type': 'application/json'}
     resp = requests.post(endpoint, json.dumps(data), headers=headers)
-    log.debug(resp.url)
-    log.debug(resp.content)
+    if not resp.ok:
+        log.error(resp.url)
+        log.error(resp.content)
     return resp
 
 
 def _perform_patch(endpoint, data):
-    headers = {'Content-Type': 'application/json'}
+    # First get the entity's etag.
+    etag = _perform_get(endpoint).json()['_etag']
+    # Now patch the entity.
+    headers = {
+        'Content-Type': 'application/json',
+        'If-Match': etag,
+    }
     resp = requests.patch(endpoint, json.dumps(data), headers=headers)
-    log.debug(resp.url)
-    log.debug(resp.content)
+    if not resp.ok:
+        log.error(resp.url)
+        log.error(resp.content)
     return resp
 
 
