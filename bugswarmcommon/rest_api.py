@@ -62,6 +62,10 @@ def confirm_email_subscriber(email):
     return _patch(_email_subscriber_email_endpoint(email), updates)
 
 
+def unsubscribe_email_subscriber(email):
+    return _delete(_email_subscriber_email_endpoint(email))
+
+
 ###################################
 # Convenience REST methods
 ###################################
