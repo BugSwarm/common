@@ -98,6 +98,14 @@ def _perform_patch(endpoint, data):
     return resp
 
 
+def _perform_delete(endpoint):
+    resp = requests.delete(endpoint)
+    if not resp.ok:
+        log.error(resp.url)
+        log.error(resp.content)
+    return resp
+
+
 ###################################
 # Convenience methods
 ###################################
