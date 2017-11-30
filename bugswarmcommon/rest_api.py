@@ -152,9 +152,9 @@ def _list(endpoint):
     while next_link:
         next_json = _get(next_link).json()
         results += next_json['_items']
-        if not ('_links' in next_json and 'last' in next_json['_links'] and 'href' in next_json['_links']['last']):
+        if not ('_links' in next_json and 'next' in next_json['_links'] and 'href' in next_json['_links']['next']):
             break
-        next_link = urljoin(next_link, next_json['_links']['last']['href'])
+        next_link = urljoin(next_link, next_json['_links']['next']['href'])
     return results
 
 
