@@ -150,12 +150,13 @@ def _list(endpoint):
     results = []
     next_link = endpoint
     while next_link:
-        json = _get(next_link).json()
-        results += json['_items']
-        if not ('_links' in json and 'last' in json['_links'] and 'href' in json['_links']['last']):
+        next_json = _get(next_link).json()
+        results += next_json['_items']
+        if not ('_links' in next_json and 'last' in next_json['_links'] and 'href' in next_json['_links']['last']):
             break
-        next_link = urljoin(next_link, json['_links']['last']['href'])
+        next_link = urljoin(next_link, next_json['_links']['last']['href'])
     return results
+
 
 def _count(endpoint):
     if endpoint is None:
