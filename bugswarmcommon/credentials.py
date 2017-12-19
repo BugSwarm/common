@@ -1,4 +1,3 @@
 # DockerHub
-DOCKER_HUB_USERNAME = 'yclliu'  # TODO: change to bugswarm or BugSwarm
-DOCKER_HUB_PASSWORD = 'bugswarm'  # TODO
-DOCKER_HUB_REPO = '/'.join([DOCKER_HUB_USERNAME, 'artifacts'])  # TODO
+DOCKER_HUB_USERNAME = 'bugswarm'
+DOCKER_HUB_REPO = '{}/{}'.format(DOCKER_HUB_USERNAME, 'artifacts')
