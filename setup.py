@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(
-    name='bugswarmcommon',
+    name='bugswarm-common',
     version='0.1',
     description='Library of common modules used throughout the BugSwarm toolset',
     packages=['bugswarmcommon'],
