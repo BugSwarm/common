@@ -31,6 +31,12 @@ def list_artifacts():
     return _list(_artifacts_endpoint())
 
 
+def filter_artifacts(api_filter):
+    if not isinstance(api_filter, str):
+        raise TypeError
+    _filter(_artifacts_endpoint(), api_filter)
+
+
 def count_artifacts():
     return _count(_artifacts_endpoint())
 
@@ -52,6 +58,12 @@ def find_email_subscriber(email):
 
 def list_email_subscribers():
     return _list(_email_subscribers_endpoint())
+
+
+def filter_email_subscribers(api_filter):
+    if not isinstance(api_filter, str):
+        raise TypeError
+    _filter(_email_subscribers_endpoint(), api_filter)
 
 
 def count_email_subscribers():
@@ -143,12 +155,12 @@ def _insert(entity, endpoint, singular_entity_name='entity'):
     return True
 
 
-# Returns all results from the current page to the last page, inclusive.
-def _list(endpoint):
-    if endpoint is None:
+# Returns a list of all the results by following the next link chain starting with start_link.
+def _iter_pages(start_link):
+    if start_link is None:
         raise ValueError
     results = []
-    next_link = endpoint
+    next_link = start_link
     while next_link:
         next_json = _get(next_link).json()
         results += next_json['_items']
@@ -156,6 +168,23 @@ def _list(endpoint):
             break
         next_link = urljoin(next_link, next_json['_links']['next']['href'])
     return results
+
+
+# Returns all results from the current page to the last page, inclusive.
+def _list(endpoint):
+    if endpoint is None:
+        raise ValueError
+    return _iter_pages(endpoint)
+
+
+def _filter(endpoint, api_filter):
+    if endpoint is None:
+        raise ValueError
+    if api_filter is None:
+        raise ValueError
+    # Append the filter as a url parameter.
+    url = '{}?where={}'.format(endpoint, api_filter)
+    return _iter_pages(url)
 
 
 def _count(endpoint):
