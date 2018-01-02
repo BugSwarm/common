@@ -22,7 +22,7 @@ def insert_artifact(artifact):
 
 def find_artifact(image_tag):
     if not isinstance(image_tag, str):
-        raise ValueError
+        raise TypeError
     log.debug('Trying to find artifact with image_tag', image_tag + '.')
     return _get(_artifact_image_tag_resource(image_tag))
 
@@ -45,7 +45,7 @@ def insert_email_subscriber(email_subscriber):
 
 def find_email_subscriber(email):
     if not isinstance(email, str):
-        raise ValueError
+        raise TypeError
     log.debug('Trying to find email subscriber with email', email + '.')
     return _get(_email_subscriber_email_endpoint(email))
 
@@ -174,7 +174,7 @@ def _artifacts_endpoint():
 
 def _artifact_image_tag_resource(image_tag):
     if not isinstance(image_tag, str):
-        raise ValueError
+        raise TypeError
     return '/'.join([_artifacts_endpoint(), image_tag])
 
 
@@ -184,5 +184,5 @@ def _email_subscribers_endpoint():
 
 def _email_subscriber_email_endpoint(email):
     if not isinstance(email, str):
-        raise ValueError
+        raise TypeError
     return '/'.join([_email_subscribers_endpoint(), email])
