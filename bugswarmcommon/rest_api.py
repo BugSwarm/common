@@ -34,7 +34,7 @@ def list_artifacts():
 def filter_artifacts(api_filter):
     if not isinstance(api_filter, str):
         raise TypeError
-    _filter(_artifacts_endpoint(), api_filter)
+    return _filter(_artifacts_endpoint(), api_filter)
 
 
 def count_artifacts():
@@ -63,7 +63,7 @@ def list_email_subscribers():
 def filter_email_subscribers(api_filter):
     if not isinstance(api_filter, str):
         raise TypeError
-    _filter(_email_subscribers_endpoint(), api_filter)
+    return _filter(_email_subscribers_endpoint(), api_filter)
 
 
 def count_email_subscribers():
