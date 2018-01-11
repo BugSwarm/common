@@ -133,18 +133,18 @@ def _delete(endpoint):
 ###################################
 
 def _endpoint(resource):
-    if resource is None:
-        raise ValueError
+    if not isinstance(resource, str):
+        raise TypeError
     return '/'.join([_BASE_URL, resource])
 
 
 def _insert(entity, endpoint, singular_entity_name='entity'):
-    if entity is None:
-        raise ValueError
-    if endpoint is None:
-        raise ValueError
-    if singular_entity_name is None:
-        raise ValueError
+    if not isinstance(entity, str):
+        raise TypeError
+    if not isinstance(endpoint, str):
+        raise TypeError
+    if not isinstance(singular_entity_name, str):
+        raise TypeError
     log.debug('Trying to insert', singular_entity_name + '.')
     resp = _post(endpoint, entity)
     if resp.status_code == 422:
@@ -157,8 +157,8 @@ def _insert(entity, endpoint, singular_entity_name='entity'):
 
 # Returns a list of all the results by following the next link chain starting with start_link.
 def _iter_pages(start_link):
-    if start_link is None:
-        raise ValueError
+    if not isinstance(start_link, str):
+        raise TypeError
     results = []
     next_link = start_link
     while next_link:
@@ -172,24 +172,24 @@ def _iter_pages(start_link):
 
 # Returns all results from the current page to the last page, inclusive.
 def _list(endpoint):
-    if endpoint is None:
-        raise ValueError
+    if not isinstance(endpoint, str):
+        raise TypeError
     return _iter_pages(endpoint)
 
 
 def _filter(endpoint, api_filter):
-    if endpoint is None:
-        raise ValueError
-    if api_filter is None:
-        raise ValueError
+    if not isinstance(endpoint, str):
+        raise TypeError
+    if not isinstance(api_filter, str):
+        raise TypeError
     # Append the filter as a url parameter.
     url = '{}?where={}'.format(endpoint, api_filter)
     return _iter_pages(url)
 
 
 def _count(endpoint):
-    if endpoint is None:
-        raise ValueError
+    if not isinstance(endpoint, str):
+        raise TypeError
     resp = _get(endpoint)
     result = resp.json()
     if result is not None and '_meta' in result and 'total' in result['_meta']:
