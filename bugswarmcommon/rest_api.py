@@ -139,7 +139,7 @@ def _endpoint(resource):
 
 
 def _insert(entity, endpoint, singular_entity_name='entity'):
-    if not isinstance(entity, str):
+    if entity is None:
         raise TypeError
     if not isinstance(endpoint, str):
         raise TypeError
