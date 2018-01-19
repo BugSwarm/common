@@ -20,11 +20,11 @@ def insert_artifact(artifact):
     return _insert(artifact, _artifacts_endpoint(), 'artifact')
 
 
-def find_artifact(image_tag, expect_found=True):
+def find_artifact(image_tag, error_if_not_found=True):
     if not isinstance(image_tag, str):
         raise TypeError
     log.debug('Trying to find artifact with image_tag', image_tag + '.')
-    return _get(_artifact_image_tag_resource(image_tag), expect_found)
+    return _get(_artifact_image_tag_resource(image_tag), error_if_not_found)
 
 
 def list_artifacts():
@@ -49,11 +49,11 @@ def insert_email_subscriber(email_subscriber):
     return _insert(email_subscriber, _email_subscribers_endpoint(), 'email subscriber')
 
 
-def find_email_subscriber(email, expect_found=True):
+def find_email_subscriber(email, error_if_not_found=True):
     if not isinstance(email, str):
         raise TypeError
     log.debug('Trying to find email subscriber with email', email + '.')
-    return _get(_email_subscriber_email_endpoint(email), expect_found)
+    return _get(_email_subscriber_email_endpoint(email), error_if_not_found)
 
 
 def list_email_subscribers():
@@ -84,11 +84,11 @@ def unsubscribe_email_subscriber(email):
 # Convenience REST methods
 ###################################
 
-def _get(endpoint, expect_found=True):
+def _get(endpoint, error_if_not_found=True):
     resp = requests.get(endpoint)
     # Do not print an error message if the entity was not expected to be found and we got a 404 status code.
     not_found = resp.status_code == 404
-    if not_found and not expect_found:
+    if not_found and not error_if_not_found:
         return resp
     elif not resp.ok:
         log.error(resp.url)
