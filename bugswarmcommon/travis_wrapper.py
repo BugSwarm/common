@@ -3,6 +3,8 @@ import time
 import cachecontrol
 import requests
 
+from cachecontrol.caches.file_cache import FileCache
+
 from . import log
 
 _BASE_URL = 'https://api.travis-ci.org'
@@ -11,8 +13,13 @@ _SLEEP_SECONDS = 5
 
 
 class TravisWrapper(object):
-    def __init__(self):
-        self._session = cachecontrol.CacheControl(requests.Session())
+    def __init__(self, *, file_cache_path=None):
+        self._file_cache_path = file_cache_path
+        if file_cache_path is None:
+            cache = None
+        else:
+            cache = FileCache(file_cache_path, forever=True)
+        self._session = cachecontrol.CacheControl(requests.Session(), cache=cache)
 
     def __enter__(self):
         return self

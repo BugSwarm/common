@@ -8,5 +8,7 @@ setup(
     install_requires=[
         'requests==2.18.4',
         'CacheControl==0.12.3',
+        'lockfile==0.12.2'  # Required to use CacheControl's FileCache.
+
     ],
 )
