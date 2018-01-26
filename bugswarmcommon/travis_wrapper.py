@@ -2,7 +2,6 @@ import time
 
 import cachecontrol
 import requests
-import requests_cache
 
 from . import log
 
@@ -12,20 +11,8 @@ _SLEEP_SECONDS = 5
 
 
 class TravisWrapper(object):
-    # file_cache_path is a relative path to the root directory of the persistent file cache, if one is used.
-    def __init__(self, *, file_cache_path=None):
-        # if file_cache_path is None:
-        #     cache = None
-        # else:
-        #     log.info('Caching Travis REST API responses in {}. Remove the cache if you suspect stale data.'
-        #              .format(file_cache_path))
-        #     cache = FileCache(file_cache_path, forever=True)
-        # self._file_cache_path = file_cache_path
+    def __init__(self):
         self._session = cachecontrol.CacheControl(requests.Session())
-        if file_cache_path:
-            log.info('Caching Travis REST API responses in {}.sqlite. Remove the cache if you suspect stale data.'
-                     .format(file_cache_path))
-            requests_cache.install_cache(file_cache_path)
 
     def __enter__(self):
         return self
