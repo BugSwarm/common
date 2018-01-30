@@ -29,7 +29,7 @@ def _log_string(*args):
     return ' '.join(str_args)
 
 
-def config_logging(log_level: int, log_file_path: Optional[str]):
+def config_logging(log_level: int, log_file_path: Optional[str] = None):
     logger = logging.getLogger()
     logger.handlers = []  # Remove previously added handlers before adding new ones.
 
