@@ -27,7 +27,7 @@ class ShellWrapper(object):
         process = subprocess.Popen(command, **kwargs)
         stdout, stderr = process.communicate()
         if stdout is not None:
-            stdout = str(stdout, 'utf-8')
+            stdout = str(stdout, 'utf-8').strip()
         if stderr is not None:
-            stderr = str(stderr, 'utf-8')
+            stderr = str(stderr, 'utf-8').strip()
         return stdout, stderr, process.returncode
