@@ -12,20 +12,17 @@ class ShellWrapper(object):
     @staticmethod
     def run_commands(*commands: Command, **kwargs) -> (StreamOr, StreamOr, ReturnCode):
         """
-        Run a sequence of commands in a shell environment.
+        Run a list of commands sequentially in the same shell environment and wait for the commands to complete.
+        All keyword arguments are passed to the subprocess.Popen constructor.
 
         :param commands: Strings that represent commands to run.
-        :param kwargs: Keyword arguments that are passed to the Popen constructor. By default, stdout and stderr are
-                       subprocess.PIPE and shell is True.
-        :return: A 3-tuple of the subprocess' stdout stream, stderr stream, and return code. The first two members of
-                 the tuple can be None depending on the values of stdout and stderr passed to run_commands.
+        :param kwargs: Keyword arguments that are passed to the Popen constructor.
+        :return: A 3-tuple of the subprocess' stdout stream, stderr stream, and return code. The streams in the tuple
+                 can be None depending on the passed values of `stdout` and `stderr`.
         """
         command = ' ; '.join(commands)
-        kwargs.setdefault('stdout', subprocess.PIPE)
-        kwargs.setdefault('stderr', subprocess.PIPE)
-        kwargs.setdefault('shell', True)
         process = subprocess.Popen(command, **kwargs)
-        stdout, stderr = process.communicate()
+        stdout, stderr = process.communicate()  # Indirectly wait for a return code.
         if stdout is not None:
             stdout = str(stdout, 'utf-8').strip()
         if stderr is not None:
