@@ -1,3 +1,5 @@
+import subprocess
+
 from .shell_wrapper import ShellWrapper
 
 _CommitSHA = str
@@ -16,5 +18,5 @@ def get_current_component_version_message(component_name: str) -> str:
 
 
 def _get_current_component_version() -> _CommitSHA:
-    stdout, _, _ = ShellWrapper.run_commands('git rev-parse HEAD')
+    stdout, _, _ = ShellWrapper.run_commands('git rev-parse HEAD', stdout=subprocess.PIPE, shell=True)
     return stdout
