@@ -7,23 +7,26 @@ from urllib.error import URLError
 from . import log
 
 
-def download_log(job_id: (str, int), destination: str, retries: int = 3):
+def download_log(job_id: (str, int), destination: str, overwrite: bool = True, retries: int = 3):
     """
     Downloads a Travis job log and stores it at destination.
 
     :param job_id: Travis job ID for which to download the log, as a string or integer.
     :param destination: Path where the log should be stored.
+    :param overwrite: Path where the log should be stored.
     :param retries: The number of times to retry the log download if it fails. Defaults to 3, in which case the network
                     will be accessed up to 4 (3 + 1) times.
+    :param overwrite: Whether to overwrite a file at `destination` if one already exists. If `overwrite` is False and a
+                      file already exists at `destination`, FileExistsError is raised. Defaults to True.
     :raises ValueError:
-    :raises FileExistsError: When a file at `destination` already exists.
+    :raises FileExistsError: When a file at `destination` already exists and `overwrite` is False.
     :return: True if the download succeeded.
     """
     if not job_id:
         raise ValueError
     if not destination:
         raise ValueError
-    if os.path.isfile(destination) and os.path.getsize(destination) > 0:
+    if os.path.isfile(destination) and not overwrite:
         log.error('The log for job', job_id, 'already exists locally.')
         raise FileExistsError
 
