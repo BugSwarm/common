@@ -35,7 +35,7 @@ def write_json(filepath: str, data, overwrite: bool = True, encoder: Optional[js
 
     :param filepath: Path to the file to which to write JSON data.
     :param data: The JSON object to encode and write to the file.
-    :param overwrite: Whether to overwrite a file at `filepath` if one already exists. If `overwrite` is False, and a
+    :param overwrite: Whether to overwrite a file at `filepath` if one already exists. If `overwrite` is False and a
                       file already exists at `filepath`, FileExistsError is raised. Defaults to True.
     :param encoder: The encoder object to use for the JSON encoding. Should be a subclass of json.JSONEncoder.
                     DefaultJSONEncoder is used by default.
