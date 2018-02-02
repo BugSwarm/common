@@ -24,7 +24,7 @@ def find_artifact(image_tag, error_if_not_found=True):
     if not isinstance(image_tag, str):
         raise TypeError
     log.debug('Trying to find artifact with image_tag', image_tag + '.')
-    return _get(_artifact_image_tag_resource(image_tag), error_if_not_found)
+    return _get(_artifact_image_tag_endpoint(image_tag), error_if_not_found)
 
 
 def list_artifacts():
@@ -205,7 +205,7 @@ def _artifacts_endpoint():
     return _endpoint(_ARTIFACTS_RESOURCE)
 
 
-def _artifact_image_tag_resource(image_tag):
+def _artifact_image_tag_endpoint(image_tag):
     if not isinstance(image_tag, str):
         raise TypeError
     return '/'.join([_artifacts_endpoint(), image_tag])
