@@ -63,6 +63,11 @@ def count_mined_projects():
     return _count(_mined_projects_endpoint())
 
 
+def set_mined_project_job_pairs(repo: str, jobpairs):
+    updates = {'jobpairs': jobpairs}
+    return _patch(_mined_projects_repo_endpoint(repo), updates)
+
+
 ###################################
 # Email Subscriber REST methods
 ###################################
