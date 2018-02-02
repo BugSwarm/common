@@ -42,8 +42,8 @@ def count_artifacts():
 # Mined Project REST methods
 ###################################
 
-def insert_mined_project(artifact):
-    return _insert(artifact, _mined_projects_endpoint(), 'artifact')
+def insert_mined_project(mined_project):
+    return _insert(mined_project, _mined_projects_endpoint(), 'mined project')
 
 
 def find_mined_project(repo: str, error_if_not_found: bool = True):
@@ -67,7 +67,7 @@ def count_mined_projects():
 # Email Subscriber REST methods
 ###################################
 
-def insert_email_subscriber(email_subscriber: str):
+def insert_email_subscriber(email_subscriber):
     return _insert(email_subscriber, _email_subscribers_endpoint(), 'email subscriber')
 
 
