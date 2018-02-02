@@ -2,12 +2,14 @@ import os
 import time
 import urllib.request
 
+from typing import Union
+
 from urllib.error import URLError
 
 from . import log
 
 
-def download_log(job_id: (str, int), destination: str, overwrite: bool = True, retries: int = 3):
+def download_log(job_id: Union[str, int], destination: str, overwrite: bool = True, retries: int = 3):
     """
     Downloads a Travis job log and stores it at destination.
 
