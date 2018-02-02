@@ -21,10 +21,8 @@ def insert_artifact(artifact):
     return _insert(artifact, _artifacts_endpoint(), 'artifact')
 
 
-def find_artifact(image_tag, error_if_not_found=True):
-    if not isinstance(image_tag, str):
-        raise TypeError
-    log.debug('Trying to find artifact with image_tag', image_tag + '.')
+def find_artifact(image_tag: str, error_if_not_found: bool = True):
+    log.debug('Trying to find artifact with image_tag {}.'.format(image_tag))
     return _get(_artifact_image_tag_endpoint(image_tag), error_if_not_found)
 
 
@@ -32,9 +30,7 @@ def list_artifacts():
     return _list(_artifacts_endpoint())
 
 
-def filter_artifacts(api_filter):
-    if not isinstance(api_filter, str):
-        raise TypeError
+def filter_artifacts(api_filter: str):
     return _filter(_artifacts_endpoint(), api_filter)
 
 
@@ -50,10 +46,8 @@ def insert_mined_project(artifact):
     return _insert(artifact, _mined_projects_endpoint(), 'artifact')
 
 
-def find_mined_project(repo, error_if_not_found=True):
-    if not isinstance(repo, str):
-        raise TypeError
-    log.debug('Trying to find mined project with repo', repo + '.')
+def find_mined_project(repo: str, error_if_not_found: bool = True):
+    log.debug('Trying to find mined project with repo {}.'.format(repo))
     return _get(_mined_projects_repo_endpoint(repo), error_if_not_found)
 
 
@@ -61,9 +55,7 @@ def list_mined_projects():
     return _list(_mined_projects_endpoint())
 
 
-def filter_mined_projects(api_filter):
-    if not isinstance(api_filter, str):
-        raise TypeError
+def filter_mined_projects(api_filter: str):
     return _filter(_mined_projects_endpoint(), api_filter)
 
 
@@ -75,14 +67,12 @@ def count_mined_projects():
 # Email Subscriber REST methods
 ###################################
 
-def insert_email_subscriber(email_subscriber):
+def insert_email_subscriber(email_subscriber: str):
     return _insert(email_subscriber, _email_subscribers_endpoint(), 'email subscriber')
 
 
-def find_email_subscriber(email, error_if_not_found=True):
-    if not isinstance(email, str):
-        raise TypeError
-    log.debug('Trying to find email subscriber with email', email + '.')
+def find_email_subscriber(email: str, error_if_not_found: bool = True):
+    log.debug('Trying to find email subscriber with email {}.'.format(email))
     return _get(_email_subscriber_email_endpoint(email), error_if_not_found)
 
 
@@ -90,9 +80,7 @@ def list_email_subscribers():
     return _list(_email_subscribers_endpoint())
 
 
-def filter_email_subscribers(api_filter):
-    if not isinstance(api_filter, str):
-        raise TypeError
+def filter_email_subscribers(api_filter: str):
     return _filter(_email_subscribers_endpoint(), api_filter)
 
 
@@ -100,13 +88,13 @@ def count_email_subscribers():
     return _count(_email_subscribers_endpoint())
 
 
-def confirm_email_subscriber(email):
+def confirm_email_subscriber(email: str):
     # Set confirmed to True and clear the confirmation token.
     updates = {'confirmed': True, 'confirm_token': ''}
     return _patch(_email_subscriber_email_endpoint(email), updates)
 
 
-def unsubscribe_email_subscriber(email):
+def unsubscribe_email_subscriber(email: str):
     return _delete(_email_subscriber_email_endpoint(email))
 
 
@@ -114,7 +102,11 @@ def unsubscribe_email_subscriber(email):
 # Convenience REST methods
 ###################################
 
-def _get(endpoint, error_if_not_found=True):
+def _get(endpoint: str, error_if_not_found: bool = True):
+    if not isinstance(endpoint, str):
+        raise TypeError
+    if not endpoint:
+        raise ValueError
     resp = requests.get(endpoint)
     # Do not print an error message if the entity was not expected to be found and we got a 404 status code.
     not_found = resp.status_code == 404
@@ -126,7 +118,11 @@ def _get(endpoint, error_if_not_found=True):
     return resp
 
 
-def _post(endpoint, data):
+def _post(endpoint: str, data):
+    if not isinstance(endpoint, str):
+        raise TypeError
+    if not endpoint:
+        raise ValueError
     headers = {'Content-Type': 'application/json'}
     resp = requests.post(endpoint, json.dumps(data), headers=headers)
     if not resp.ok:
@@ -135,7 +131,11 @@ def _post(endpoint, data):
     return resp
 
 
-def _patch(endpoint, data):
+def _patch(endpoint: str, data):
+    if not isinstance(endpoint, str):
+        raise TypeError
+    if not endpoint:
+        raise ValueError
     # First get the entity's etag.
     etag = _get(endpoint).json()['_etag']
     # Now patch the entity.
@@ -150,7 +150,11 @@ def _patch(endpoint, data):
     return resp
 
 
-def _delete(endpoint):
+def _delete(endpoint: str):
+    if not isinstance(endpoint, str):
+        raise TypeError
+    if not endpoint:
+        raise ValueError
     # First get the entity's etag.
     etag = _get(endpoint).json()['_etag']
     headers = {'If-Match': etag}
@@ -166,20 +170,26 @@ def _delete(endpoint):
 # Convenience methods
 ###################################
 
-def _endpoint(resource):
+def _endpoint(resource: str):
     if not isinstance(resource, str):
         raise TypeError
+    if not resource:
+        raise ValueError
     return '/'.join([_BASE_URL, resource])
 
 
-def _insert(entity, endpoint, singular_entity_name='entity'):
+def _insert(entity, endpoint: str, singular_entity_name: str = 'entity'):
     if entity is None:
         raise TypeError
     if not isinstance(endpoint, str):
         raise TypeError
+    if not endpoint:
+        raise ValueError
     if not isinstance(singular_entity_name, str):
         raise TypeError
-    log.debug('Trying to insert', singular_entity_name + '.')
+    if not singular_entity_name:
+        raise ValueError
+    log.debug('Trying to insert {}.'.format(singular_entity_name))
     resp = _post(endpoint, entity)
     if resp.status_code == 422:
         log.error('The', singular_entity_name, 'was not added because it failed validation.')
@@ -190,9 +200,11 @@ def _insert(entity, endpoint, singular_entity_name='entity'):
 
 
 # Returns a list of all the results by following the next link chain starting with start_link.
-def _iter_pages(start_link):
+def _iter_pages(start_link: str):
     if not isinstance(start_link, str):
         raise TypeError
+    if not start_link:
+        raise ValueError
     results = []
     next_link = start_link
     while next_link:
@@ -205,25 +217,33 @@ def _iter_pages(start_link):
 
 
 # Returns all results from the current page to the last page, inclusive.
-def _list(endpoint):
+def _list(endpoint: str):
     if not isinstance(endpoint, str):
         raise TypeError
+    if not endpoint:
+        raise ValueError
     return _iter_pages(endpoint)
 
 
-def _filter(endpoint, api_filter):
+def _filter(endpoint: str, api_filter: str):
     if not isinstance(endpoint, str):
         raise TypeError
+    if not endpoint:
+        raise ValueError
     if not isinstance(api_filter, str):
         raise TypeError
+    if not api_filter:
+        raise ValueError
     # Append the filter as a url parameter.
     url = '{}?where={}'.format(endpoint, api_filter)
     return _iter_pages(url)
 
 
-def _count(endpoint):
+def _count(endpoint: str):
     if not isinstance(endpoint, str):
         raise TypeError
+    if not endpoint:
+        raise ValueError
     resp = _get(endpoint)
     result = resp.json()
     if result is not None and '_meta' in result and 'total' in result['_meta']:
@@ -235,9 +255,11 @@ def _artifacts_endpoint():
     return _endpoint(_ARTIFACTS_RESOURCE)
 
 
-def _artifact_image_tag_endpoint(image_tag):
+def _artifact_image_tag_endpoint(image_tag: str):
     if not isinstance(image_tag, str):
         raise TypeError
+    if not image_tag:
+        raise ValueError
     return '/'.join([_artifacts_endpoint(), image_tag])
 
 
@@ -245,7 +267,7 @@ def _mined_projects_endpoint():
     return _endpoint(_MINED_PROJECTS_RESOURCE)
 
 
-def _mined_projects_repo_endpoint(repo):
+def _mined_projects_repo_endpoint(repo: str):
     if not isinstance(repo, str):
         raise TypeError
     return '/'.join([_artifacts_endpoint(), repo])
@@ -255,7 +277,9 @@ def _email_subscribers_endpoint():
     return _endpoint(_EMAIL_SUBSCRIBERS_RESOURCE)
 
 
-def _email_subscriber_email_endpoint(email):
+def _email_subscriber_email_endpoint(email: str):
     if not isinstance(email, str):
         raise TypeError
+    if not email:
+        raise ValueError
     return '/'.join([_email_subscribers_endpoint(), email])
