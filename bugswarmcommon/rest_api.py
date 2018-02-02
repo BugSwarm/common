@@ -270,6 +270,8 @@ def _mined_projects_endpoint():
 def _mined_projects_repo_endpoint(repo: str):
     if not isinstance(repo, str):
         raise TypeError
+    if not repo:
+        raise ValueError
     return '/'.join([_artifacts_endpoint(), repo])
 
 
