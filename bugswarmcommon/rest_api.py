@@ -9,6 +9,7 @@ from . import log
 
 _BASE_URL = 'http://52.173.92.238/api/v1'
 _ARTIFACTS_RESOURCE = 'artifacts'
+_MINED_PROJECTS_RESOURCE = 'minedProjects'
 _EMAIL_SUBSCRIBERS_RESOURCE = 'emailSubscribers'
 
 
@@ -39,6 +40,35 @@ def filter_artifacts(api_filter):
 
 def count_artifacts():
     return _count(_artifacts_endpoint())
+
+
+###################################
+# Mined Project REST methods
+###################################
+
+def insert_mined_project(artifact):
+    return _insert(artifact, _mined_projects_endpoint(), 'artifact')
+
+
+def find_mined_project(repo, error_if_not_found=True):
+    if not isinstance(repo, str):
+        raise TypeError
+    log.debug('Trying to find mined project with repo', repo + '.')
+    return _get(_mined_projects_repo_endpoint(repo), error_if_not_found)
+
+
+def list_mined_projects():
+    return _list(_mined_projects_endpoint())
+
+
+def filter_mined_projects(api_filter):
+    if not isinstance(api_filter, str):
+        raise TypeError
+    return _filter(_mined_projects_endpoint(), api_filter)
+
+
+def count_mined_projects():
+    return _count(_mined_projects_endpoint())
 
 
 ###################################
@@ -209,6 +239,16 @@ def _artifact_image_tag_endpoint(image_tag):
     if not isinstance(image_tag, str):
         raise TypeError
     return '/'.join([_artifacts_endpoint(), image_tag])
+
+
+def _mined_projects_endpoint():
+    return _endpoint(_MINED_PROJECTS_RESOURCE)
+
+
+def _mined_projects_repo_endpoint(repo):
+    if not isinstance(repo, str):
+        raise TypeError
+    return '/'.join([_artifacts_endpoint(), repo])
 
 
 def _email_subscribers_endpoint():
