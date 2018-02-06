@@ -47,7 +47,7 @@ def write_json(filepath: str, data, overwrite: bool = True, encoder: Optional[js
         raise ValueError
     if os.path.isfile(filepath) and not overwrite:
         raise FileExistsError
-    if not data:
+    if data is None:
         raise ValueError
     with open(filepath, 'w') as f:
         json.dump(data, f, cls=encoder, indent=2)
