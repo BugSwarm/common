@@ -277,7 +277,7 @@ def _mined_projects_repo_endpoint(repo: str):
         raise TypeError
     if not repo:
         raise ValueError
-    return '/'.join([_artifacts_endpoint(), repo])
+    return '/'.join([_mined_projects_endpoint(), repo])
 
 
 def _email_subscribers_endpoint():
