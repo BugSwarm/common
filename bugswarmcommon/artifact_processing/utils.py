@@ -1,0 +1,72 @@
+"""
+Convenience methods and constants to facilitate a processing workflow involving BugSwarm artifact images.
+"""
+import io
+import os
+import shutil
+
+from ..rest_api import find_artifact
+from ..shell_wrapper import ShellWrapper
+
+REPOS_DIR = '/home/travis/build'
+_SANDBOX = 'bugswarm-sandbox'
+HOST_SANDBOX = os.path.join(os.path.expanduser('~'), _SANDBOX)
+CONTAINER_SANDBOX = os.path.join(os.sep, _SANDBOX)
+
+
+def copy_to_host_sandbox(filepath):
+    """
+    Copy a file into the host-side sandbox.
+    :param filepath: Path to the file to be copied.
+    """
+    if not filepath:
+        raise ValueError
+    shutil.copy(filepath, HOST_SANDBOX)
+
+
+def get_repo(image_tag):
+    """
+    Get the repository slug for the artifact represented by `image_tag`.
+    """
+    if not image_tag:
+        raise ValueError
+    resp = find_artifact(image_tag)
+    resp.raise_for_status()
+    return resp.json()['repo']
+
+
+def get_failed_repo_dir(image_tag):
+    """
+    Get the path to the failed repository in the container.
+    """
+    if not image_tag:
+        raise ValueError
+    return os.path.join(REPOS_DIR, 'failed', *get_repo(image_tag).split('/'))
+
+
+def get_passed_repo_dir(image_tag):
+    """
+    Get the path to the passed repository in the container.
+    """
+    if not image_tag:
+        raise ValueError
+    return os.path.join(REPOS_DIR, 'passed', *get_repo(image_tag).split('/'))
+
+
+def run_artifact(image_tag, stdin: str):
+    """
+    Assumes that the caller wants to use the sandbox and stdin piping features of the BugSwarm client since this
+    function will likely be called in the context of an artifact processing workflow.
+    :param image_tag: The image tag representing the artifact image to run.
+    :param stdin: A string containing commands to run in the artifact container. Will be piped to the container process'
+                  standard input stream.
+    """
+    if not image_tag:
+        raise ValueError
+    if not stdin:
+        raise ValueError
+    else:
+        stdin = io.StringIO(stdin)
+    ShellWrapper.run_commands('bugswarm run --image-tag {} --use-sandbox --pipe-stdin'.format(image_tag),
+                              stdin=stdin,
+                              shell=True)
