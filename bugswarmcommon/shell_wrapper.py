@@ -13,7 +13,7 @@ class ShellWrapper(object):
     def run_commands(*commands: Command, **kwargs) -> (StreamOr, StreamOr, ReturnCode):
         """
         Run a list of commands sequentially in the same shell environment and wait for the commands to complete.
-        All keyword arguments are passed to the subprocess.Popen constructor.
+        All keyword arguments are passed to the subprocess.run function.
 
         :param commands: Strings that represent commands to run.
         :param kwargs: Keyword arguments that are passed to the Popen constructor.
@@ -21,10 +21,12 @@ class ShellWrapper(object):
                  can be None depending on the passed values of `stdout` and `stderr`.
         """
         command = ' ; '.join(commands)
-        process = subprocess.Popen(command, **kwargs)
-        stdout, stderr = process.communicate()  # Indirectly wait for a return code.
-        if stdout is not None:
+        process = subprocess.run(command, **kwargs)  # Indirectly waits for a return code.
+        stdout = process.stdout
+        stderr = process.stderr
+        # Decode stdout and stderr to strings if needed.
+        if isinstance(stdout, bytes):
             stdout = str(stdout, 'utf-8').strip()
-        if stderr is not None:
+        if isinstance(stderr, bytes):
             stderr = str(stderr, 'utf-8').strip()
         return stdout, stderr, process.returncode

@@ -1,7 +1,8 @@
-from concurrent.futures import wait
+from concurrent.futures import as_completed
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
+from .. import log
 
 class ParallelArtifactRunner(object):
     """
@@ -37,7 +38,20 @@ class ParallelArtifactRunner(object):
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             future_to_image_tag = {executor.submit(self._thread_main, image_tag): image_tag
                                    for image_tag in self._image_tags}
-        wait(future_to_image_tag)
+        attempted = 0
+        succeeded = 0
+        errored = 0
+        for future in as_completed(future_to_image_tag):
+            attempted += 1
+            try:
+                data = future.result()
+                if data:
+                    succeeded += 1
+                else:
+                    errored += 1
+            except Exception as e:
+                log.error(e)
+                errored += 1
         self.post_run()
 
     def _thread_main(self, image_tag):
@@ -47,6 +61,7 @@ class ParallelArtifactRunner(object):
         """
         Subclasses must override this method to process each item in the workload.
         :param image_tag: The image tag representing the artifact to process.
+        :return: The eventual return value of the worker thread that processed `image_tag`.
         """
         raise NotImplementedError
 
