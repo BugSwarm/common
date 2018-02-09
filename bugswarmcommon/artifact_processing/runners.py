@@ -1,3 +1,5 @@
+import os
+
 from concurrent.futures import as_completed
 from concurrent.futures import ThreadPoolExecutor
 from distutils.dir_util import copy_tree
@@ -109,7 +111,7 @@ class CopyAndExecuteArtifactRunner(ParallelArtifactRunner):
         self._command = command
 
     def pre_run(self):
-        copy_tree(self.copy_dir, procutils.HOST_SANDBOX)
+        copy_tree(self.copy_dir, os.path.join(procutils.HOST_SANDBOX, self.copy_dir))
 
     def process_artifact(self, image_tag: str):
         return procutils.run_artifact(image_tag, command=self._command(image_tag))

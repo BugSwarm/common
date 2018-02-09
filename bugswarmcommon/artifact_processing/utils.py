@@ -3,7 +3,6 @@ Convenience methods and constants to facilitate a processing workflow involving 
 """
 import os
 import shutil
-import subprocess
 
 from ..rest_api import find_artifact
 from ..shell_wrapper import ShellWrapper
@@ -68,13 +67,11 @@ def run_artifact(image_tag: str, command: str):
     """
     if not image_tag:
         raise ValueError
-    if not input:
+    if not command:
         raise ValueError
     combined, _, returncode = ShellWrapper.run_commands(
         'bugswarm run --image-tag {} --use-sandbox --pipe-stdin'.format(image_tag),
-        input=input,
+        input=command,
         universal_newlines=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
         shell=True)
     return combined, returncode
