@@ -21,6 +21,8 @@ def copy_to_host_sandbox(filepath: str):
     """
     if not filepath:
         raise ValueError
+    if not os.path.isfile(filepath):
+        raise FileNotFoundError
     shutil.copy(filepath, HOST_SANDBOX)
 
 
@@ -53,13 +55,13 @@ def get_passed_repo_dir(image_tag: str):
     return os.path.join(REPOS_DIR, 'passed', *get_repo(image_tag).split('/'))
 
 
-def run_artifact(image_tag: str, input: str):
+def run_artifact(image_tag: str, command: str):
     """
     Assumes that the caller wants to use the sandbox and stdin piping features of the BugSwarm client since this
     function will likely be called in the context of an artifact processing workflow.
     :param image_tag: The image tag representing the artifact image to run.
-    :param stdin: A string containing commands to run in the artifact container. Will be piped to the container process'
-                  standard input stream.
+    :param command: A string containing command(s) to execute in the artifact container. Will be piped to the container
+                    process' standard input stream.
     :return: A 2-tuple of
              - the combined output of stdout and stderr
              - the return code of the subprocess that ran the artifact container.
@@ -68,11 +70,11 @@ def run_artifact(image_tag: str, input: str):
         raise ValueError
     if not input:
         raise ValueError
-    stdout, stderr, returncode = ShellWrapper.run_commands(
+    combined, _, returncode = ShellWrapper.run_commands(
         'bugswarm run --image-tag {} --use-sandbox --pipe-stdin'.format(image_tag),
         input=input,
         universal_newlines=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         shell=True)
-    return stdout, returncode
+    return combined, returncode
