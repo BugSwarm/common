@@ -37,7 +37,19 @@ def filter_artifacts(api_filter: str):
 def count_artifacts():
     return _count(_artifacts_endpoint())
 
+
 def set_artifact_metric(image_tag: str, metric_name: str, metric_value):
+    """
+    Add a metric to an existing artifact. The value of the metric can be any valid database type.
+
+    If the metric with name `metric_name` already exists, then its value will be overridden with `metric_value`.
+    Otherwise, the metric will be created with value `metric_value`.
+
+    :param image_tag: The image tag identifying the artifact to update.
+    :param metric_name: The name of the metric to add or update.
+    :param metric_value: The new value of the metric.
+    :return: The response object.
+    """
     if not isinstance(metric_name, str):
         raise TypeError
     if not metric_name:
