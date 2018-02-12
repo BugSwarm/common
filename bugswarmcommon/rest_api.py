@@ -37,6 +37,14 @@ def filter_artifacts(api_filter: str):
 def count_artifacts():
     return _count(_artifacts_endpoint())
 
+def set_artifact_metric(image_tag: str, metric_name: str, metric_value):
+    if not isinstance(metric_name, str):
+        raise TypeError
+    if not metric_name:
+        raise ValueError
+    updates = {'metrics.{}'.format(metric_name): metric_value}
+    return _patch(_artifact_image_tag_endpoint(image_tag), updates)
+
 
 ###################################
 # Mined Project REST methods
