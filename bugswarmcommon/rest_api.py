@@ -242,7 +242,7 @@ def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
                     f.seek(0)
                     def gen(fff):
                         for l in fff:
-                            yield l
+                            yield l.encode('utf-8')
                     resp2 = _post(endpoint, gen(f))
                     # import pdb; pdb.set_trace()
                     # resp.request
