@@ -1,5 +1,6 @@
 import json
 import pprint
+import tempfile
 
 from urllib.parse import urljoin
 
@@ -18,7 +19,7 @@ _EMAIL_SUBSCRIBERS_RESOURCE = 'emailSubscribers'
 ###################################
 
 def insert_artifact(artifact):
-    return _insert(artifact, _artifacts_endpoint(), 'artifact')
+    return _insert(_artifacts_endpoint(), artifact, 'artifact')
 
 
 def find_artifact(image_tag: str, error_if_not_found: bool = True):
@@ -63,7 +64,7 @@ def set_artifact_metric(image_tag: str, metric_name: str, metric_value):
 ###################################
 
 def insert_mined_project(mined_project):
-    return _insert(mined_project, _mined_projects_endpoint(), 'mined project')
+    return _insert(_mined_projects_endpoint(), mined_project, 'mined project')
 
 
 def find_mined_project(repo: str, error_if_not_found: bool = True):
@@ -93,7 +94,7 @@ def set_mined_project_build_pairs(repo: str, buildpairs):
 ###################################
 
 def insert_email_subscriber(email_subscriber):
-    return _insert(email_subscriber, _email_subscribers_endpoint(), 'email subscriber')
+    return _insert(_email_subscribers_endpoint(), email_subscriber, 'email subscriber')
 
 
 def find_email_subscriber(email: str, error_if_not_found: bool = True):
@@ -203,7 +204,7 @@ def _endpoint(resource: str):
     return '/'.join([_BASE_URL, resource])
 
 
-def _insert(entity, endpoint: str, singular_entity_name: str = 'entity'):
+def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
     if entity is None:
         raise TypeError
     if not isinstance(endpoint, str):
@@ -215,13 +216,37 @@ def _insert(entity, endpoint: str, singular_entity_name: str = 'entity'):
     if not singular_entity_name:
         raise ValueError
     log.debug('Trying to insert {}.'.format(singular_entity_name))
+
+    def check_resp(resp: requests.Response, used_chunked: bool) -> bool:
+        """
+        Takes action based on the status code of `resp`. Retries the request using chunked transfer if the entity was
+        too large and chunked transfer was not used. At most, this function should recurse once.
+
+        :param resp: The response to check.
+        :param used_chunked: Whether the response used chunked transfer.
+        :return: The `ok` attribute of the response.
+        """
+        if resp.status_code == 413 and not used_chunked:
+            if not used_chunked:
+                log.warning('The {} was not added because it was too large. Trying again with a chunked transfer.'
+                            .format(singular_entity_name))
+                # Create a temporary file to enable chunked transfer.
+                with tempfile.TemporaryFile() as f:
+                    f.write(json.dumps(entity))
+                    f.seek(0)
+                    resp = _post(endpoint, f)
+                    return check_resp(resp, used_chunked=True)
+            else:
+                log.error('The {} was not added because it was too large even with a chunked transfer.'
+                          .format(singular_entity_name))
+        elif resp.status_code == 422:
+            log.error('The {} was not added because it failed validation.'.format(singular_entity_name))
+            log.error(pprint.pformat(entity))
+            log.error(resp.content)
+        return resp.ok
+
     resp = _post(endpoint, entity)
-    if resp.status_code == 422:
-        log.error('The', singular_entity_name, 'was not added because it failed validation.')
-        log.error(pprint.pformat(entity))
-        log.error(resp.content)
-        return False
-    return True
+    return check_resp(resp, used_chunked=False)
 
 
 # Returns a list of all the results by following the next link chain starting with start_link.
