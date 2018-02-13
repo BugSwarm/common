@@ -231,8 +231,8 @@ def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
                 log.warning('The {} was not added because it was too large. Trying again with a chunked transfer.'
                             .format(singular_entity_name))
                 # Create a temporary file to enable chunked transfer.
-                with tempfile.TemporaryFile() as f:
-                    f.write(json.dumps(entity).encode('utf-8'))
+                with tempfile.TemporaryFile('w+') as f:
+                    f.write(json.dumps(entity))
                     f.seek(0)
                     resp = _post(endpoint, f)
                     return check_resp(resp, used_chunked=True)
@@ -245,8 +245,7 @@ def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
             log.error(resp.content)
         return resp.ok
 
-    resp = _post(endpoint, entity)
-    return check_resp(resp, used_chunked=False)
+    return check_resp(_post(endpoint, entity), used_chunked=False)
 
 
 # Returns a list of all the results by following the next link chain starting with start_link.
