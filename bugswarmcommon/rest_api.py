@@ -150,7 +150,13 @@ def _post(endpoint: str, data):
     if not endpoint:
         raise ValueError
     headers = {'Content-Type': 'application/json'}
-    resp = requests.post(endpoint, json.dumps(data), headers=headers)
+    # Assume the data is JSON serializable (i.e. not a file-like object). If the attempt to serialize the data fails,
+    # then assume that the data has already been serialized and should just be passed straight to requests.post.
+    try:
+        data = json.dumps(data)
+    except TypeError:
+        pass
+    resp = requests.post(endpoint, data, headers=headers)
     if not resp.ok:
         log.error(resp.url)
         log.error(resp.content)
