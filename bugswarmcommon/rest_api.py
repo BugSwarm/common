@@ -240,7 +240,10 @@ def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
                 with tempfile.TemporaryFile('w+') as f:
                     f.write(json.dumps(entity, indent=2))
                     f.seek(0)
-                    resp2 = _post(endpoint, f)
+                    def gen(fff):
+                        for l in fff:
+                            yield l
+                    resp2 = _post(endpoint, gen(f))
                     # import pdb; pdb.set_trace()
                     # resp.request
                     return check_resp(resp2, used_chunked=True)
