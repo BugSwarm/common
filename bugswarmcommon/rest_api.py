@@ -244,7 +244,7 @@ def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
                         for l in fff:
                             yield l.encode('utf-8')
                     resp2 = _post(endpoint, gen(f))
-                    # import pdb; pdb.set_trace()
+                    import pdb; pdb.set_trace()
                     # resp.request
                     return check_resp(resp2, used_chunked=True)
             else:
