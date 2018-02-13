@@ -240,8 +240,6 @@ def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
                 with tempfile.TemporaryFile('w+') as f:
                     f.write(json.dumps(entity, indent=2))
                     f.seek(0)
-                    print(f.read())
-                    exit(1)
                     resp = _post(endpoint, f)
                     return check_resp(resp, used_chunked=True)
             else:
