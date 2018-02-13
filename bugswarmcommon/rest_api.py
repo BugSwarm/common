@@ -1,6 +1,5 @@
 import json
 import pprint
-import tempfile
 
 from urllib.parse import urljoin
 
@@ -19,7 +18,7 @@ _EMAIL_SUBSCRIBERS_RESOURCE = 'emailSubscribers'
 ###################################
 
 def insert_artifact(artifact):
-    return _insert(_artifacts_endpoint(), artifact, 'artifact')
+    return _insert(artifact, _artifacts_endpoint(), 'artifact')
 
 
 def find_artifact(image_tag: str, error_if_not_found: bool = True):
@@ -64,7 +63,7 @@ def set_artifact_metric(image_tag: str, metric_name: str, metric_value):
 ###################################
 
 def insert_mined_project(mined_project):
-    return _insert(_mined_projects_endpoint(), mined_project, 'mined project')
+    return _insert(mined_project, _mined_projects_endpoint(), 'mined project')
 
 
 def find_mined_project(repo: str, error_if_not_found: bool = True):
@@ -94,7 +93,7 @@ def set_mined_project_build_pairs(repo: str, buildpairs):
 ###################################
 
 def insert_email_subscriber(email_subscriber):
-    return _insert(_email_subscribers_endpoint(), email_subscriber, 'email subscriber')
+    return _insert(email_subscriber, _email_subscribers_endpoint(), 'email subscriber')
 
 
 def find_email_subscriber(email: str, error_if_not_found: bool = True):
@@ -150,13 +149,7 @@ def _post(endpoint: str, data):
     if not endpoint:
         raise ValueError
     headers = {'Content-Type': 'application/json'}
-    # Assume the data is JSON serializable (i.e. not a file-like object). If the attempt to serialize the data fails,
-    # then assume that the data has already been serialized and should just be passed straight to requests.post.
-    try:
-        data = json.dumps(data)
-    except TypeError:
-        pass
-    resp = requests.post(endpoint, data, headers=headers)
+    resp = requests.post(endpoint, json.dumps(data), headers=headers)
     if not resp.ok:
         log.error(resp.url)
         log.error(resp.content)
@@ -210,7 +203,7 @@ def _endpoint(resource: str):
     return '/'.join([_BASE_URL, resource])
 
 
-def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
+def _insert(entity, endpoint: str, singular_entity_name: str = 'entity'):
     if entity is None:
         raise TypeError
     if not isinstance(endpoint, str):
@@ -222,41 +215,13 @@ def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
     if not singular_entity_name:
         raise ValueError
     log.debug('Trying to insert {}.'.format(singular_entity_name))
-
-    def check_resp(resp: requests.Response, used_chunked: bool) -> bool:
-        """
-        Takes action based on the status code of `resp`. Retries the request using chunked transfer if the entity was
-        too large and chunked transfer was not used. At most, this function will recurse once.
-
-        :param resp: The response to check.
-        :param used_chunked: Whether the response used chunked transfer.
-        :return: The `ok` attribute of the response.
-        """
-        if resp.status_code == 413:
-            if not used_chunked:
-                log.warning('The {} was not added because it was too large. Trying again with a chunked transfer.'
-                            .format(singular_entity_name))
-                # Create a temporary file to enable chunked transfer.
-                with tempfile.TemporaryFile('w+') as f:
-                    f.write(json.dumps(entity, indent=2))
-                    f.seek(0)
-                    def gen(fff):
-                        for l in fff:
-                            yield l.encode('utf-8')
-                    resp2 = _post(endpoint, gen(f))
-                    import pdb; pdb.set_trace()
-                    # resp.request
-                    return check_resp(resp2, used_chunked=True)
-            else:
-                log.error('The {} was not added because it was too large even with a chunked transfer.'
-                          .format(singular_entity_name))
-        elif resp.status_code == 422:
-            log.error('The {} was not added because it failed validation.'.format(singular_entity_name))
-            log.error(pprint.pformat(entity))
-            log.error(resp.content)
-        return resp.ok
-
-    return check_resp(_post(endpoint, entity), used_chunked=False)
+    resp = _post(endpoint, entity)
+    if resp.status_code == 422:
+        log.error('The', singular_entity_name, 'was not added because it failed validation.')
+        log.error(pprint.pformat(entity))
+        log.error(resp.content)
+        return False
+    return True
 
 
 # Returns a list of all the results by following the next link chain starting with start_link.
