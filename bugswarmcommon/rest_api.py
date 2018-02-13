@@ -238,7 +238,7 @@ def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
                             .format(singular_entity_name))
                 # Create a temporary file to enable chunked transfer.
                 with tempfile.TemporaryFile('w+') as f:
-                    f.write(json.dumps(entity))
+                    f.write(json.dumps(entity, indent=2))
                     f.seek(0)
                     print(f.read())
                     exit(1)
