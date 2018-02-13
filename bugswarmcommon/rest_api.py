@@ -154,9 +154,10 @@ def _post(endpoint: str, data):
     # then assume that the data has already been serialized and should just be passed straight to requests.post.
     try:
         data = json.dumps(data)
+        resp = requests.post(endpoint, data=data, headers=headers)
     except TypeError:
-        pass
-    resp = requests.post(endpoint, data, headers=headers)
+        resp = requests.post(endpoint, files=data, headers=headers)
+    # resp = requests.post(endpoint, data, headers=headers)
     if not resp.ok:
         log.error(resp.url)
         log.error(resp.content)
@@ -241,7 +242,7 @@ def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
                     f.write(json.dumps(entity, indent=2))
                     f.seek(0)
                     resp = _post(endpoint, f)
-                    import pdb; pdb.set_trace()
+                    # import pdb; pdb.set_trace()
                     # resp.request
                     return check_resp(resp, used_chunked=True)
             else:
