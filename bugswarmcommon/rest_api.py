@@ -226,13 +226,13 @@ def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
     def check_resp(resp: requests.Response, used_chunked: bool) -> bool:
         """
         Takes action based on the status code of `resp`. Retries the request using chunked transfer if the entity was
-        too large and chunked transfer was not used. At most, this function should recurse once.
+        too large and chunked transfer was not used. At most, this function will recurse once.
 
         :param resp: The response to check.
         :param used_chunked: Whether the response used chunked transfer.
         :return: The `ok` attribute of the response.
         """
-        if resp.status_code == 413 and not used_chunked:
+        if resp.status_code == 413:
             if not used_chunked:
                 log.warning('The {} was not added because it was too large. Trying again with a chunked transfer.'
                             .format(singular_entity_name))
