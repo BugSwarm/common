@@ -241,6 +241,8 @@ def _insert(endpoint: str, entity, singular_entity_name: str = 'entity'):
                     f.write(json.dumps(entity, indent=2))
                     f.seek(0)
                     resp = _post(endpoint, f)
+                    import pdb; pdb.set_trace()
+                    # resp.request
                     return check_resp(resp, used_chunked=True)
             else:
                 log.error('The {} was not added because it was too large even with a chunked transfer.'
