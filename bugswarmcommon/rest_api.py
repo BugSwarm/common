@@ -157,6 +157,7 @@ def _post(endpoint: str, data):
         resp = requests.post(endpoint, data=data, headers=headers)
     except TypeError:
         resp = requests.post(endpoint, files=data, headers=headers)
+        import pdb; pdb.set_trace()
     # resp = requests.post(endpoint, data, headers=headers)
     if not resp.ok:
         log.error(resp.url)
