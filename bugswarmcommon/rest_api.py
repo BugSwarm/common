@@ -238,10 +238,14 @@ def _iter_pages(start_link: str) -> List:
     next_link = start_link
     while next_link:
         next_json = _get(next_link).json()
-        results += next_json['_items']
-        if not ('_links' in next_json and 'next' in next_json['_links'] and 'href' in next_json['_links']['next']):
+        try:
+            results += next_json['_items']
+        except KeyError:
             break
-        next_link = urljoin(next_link, next_json['_links']['next']['href'])
+        try:
+            next_link = urljoin(next_link, next_json['_links']['next']['href'])
+        except KeyError:
+            break
     return results
 
 
@@ -275,11 +279,12 @@ def _count(endpoint: Endpoint) -> int:
         raise ValueError
     resp = _get(endpoint)
     result = resp.json()
-    if result is not None and '_meta' in result and 'total' in result['_meta']:
+    try:
         total = result['_meta']['total']
         assert isinstance(total, int)
         return total
-    return -1
+    except KeyError:
+        return -1
 
 
 def _artifacts_endpoint() -> Endpoint:
