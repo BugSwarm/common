@@ -55,11 +55,11 @@ def _get_log_from_url(log_url: str, max_retries: int, retry_count: int = 0):
             log.info('Downloaded log from {}.'.format(log_url))
             return result
     except URLError:
-        log.error('Could not download log from {}.'.format(log_url))
+        log.info('Could not download log from {}.'.format(log_url))
         return None
     except ConnectionResetError:
         if retry_count == max_retries:
-            log.error('Could not download log from', log_url, 'after retrying', max_retries, 'times.')
+            log.info('Could not download log from', log_url, 'after retrying', max_retries, 'times.')
             return None
         log.warning('The server reset the connection. Retrying after', sleep_duration, 'seconds.')
         time.sleep(sleep_duration)
