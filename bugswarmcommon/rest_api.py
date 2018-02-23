@@ -12,7 +12,7 @@ from . import log
 
 _BASE_URL = 'http://52.173.92.238/api/v1'
 _ARTIFACTS_RESOURCE = 'artifacts'
-_MINED_PROJECTS_RESOURCE = 'minedProjects'
+_MINED_BUILD_PAIRS_RESOURCE = 'minedBuildPairs'
 _EMAIL_SUBSCRIBERS_RESOURCE = 'emailSubscribers'
 
 Endpoint = str
@@ -64,33 +64,30 @@ def set_artifact_metric(image_tag: str, metric_name: str, metric_value) -> Respo
 
 
 ###################################
-# Mined Project REST methods
+# Mined Build Pair REST methods
 ###################################
 
-def insert_mined_project(mined_project) -> Response:
-    return _insert(_mined_projects_endpoint(), mined_project, 'mined project')
+def insert_mined_build_pair(mined_build_pair) -> Response:
+    return _insert(_mined_build_pairs_endpoint(), mined_build_pair, 'mined build pair')
 
 
-def find_mined_project(repo: str, error_if_not_found: bool = True) -> Response:
-    log.debug('Trying to find mined project with repo {}.'.format(repo))
-    return _get(_mined_projects_repo_endpoint(repo), error_if_not_found)
+# This function is intentionally named with the plural 'pairs' because it can return multiple build pairs from the same
+# repo. This quirk is unique to the mined build pairs collection, which has no key field other than the '_id' field.
+def find_mined_build_pairs(repo: str, error_if_not_found: bool = True) -> Response:
+    log.debug('Trying to find mined build pair with repo {}.'.format(repo))
+    return _get(_mined_build_pairs_repo_endpoint(repo), error_if_not_found)
 
 
-def list_mined_projects() -> List:
-    return _list(_mined_projects_endpoint())
+def list_mined_build_pairs() -> List:
+    return _list(_mined_build_pairs_endpoint())
 
 
-def filter_mined_projects(api_filter: str) -> List:
-    return _filter(_mined_projects_endpoint(), api_filter)
+def filter_mined_build_pairs(api_filter: str) -> List:
+    return _filter(_mined_build_pairs_endpoint(), api_filter)
 
 
-def count_mined_projects() -> int:
-    return _count(_mined_projects_endpoint())
-
-
-def set_mined_project_build_pairs(repo: str, buildpairs) -> Response:
-    updates = {'buildpairs': buildpairs}
-    return _patch(_mined_projects_repo_endpoint(repo), updates)
+def count_mined_build_pairs() -> int:
+    return _count(_mined_build_pairs_endpoint())
 
 
 ###################################
@@ -299,16 +296,16 @@ def _artifact_image_tag_endpoint(image_tag: str) -> Endpoint:
     return '/'.join([_artifacts_endpoint(), image_tag])
 
 
-def _mined_projects_endpoint() -> Endpoint:
-    return _endpoint(_MINED_PROJECTS_RESOURCE)
+def _mined_build_pairs_endpoint() -> Endpoint:
+    return _endpoint(_MINED_BUILD_PAIRS_RESOURCE)
 
 
-def _mined_projects_repo_endpoint(repo: str) -> Endpoint:
+def _mined_build_pairs_repo_endpoint(repo: str) -> Endpoint:
     if not isinstance(repo, str):
         raise TypeError
     if not repo:
         raise ValueError
-    return '/'.join([_mined_projects_endpoint(), repo])
+    return '/'.join([_mined_build_pairs_endpoint(), repo])
 
 
 def _email_subscribers_endpoint() -> Endpoint:
