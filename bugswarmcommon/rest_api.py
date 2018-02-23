@@ -71,11 +71,9 @@ def insert_mined_build_pair(mined_build_pair) -> Response:
     return _insert(_mined_build_pairs_endpoint(), mined_build_pair, 'mined build pair')
 
 
-# This function is intentionally named with the plural 'pairs' because it can return multiple build pairs from the same
-# repo. This quirk is unique to the mined build pairs collection, which has no key field other than the '_id' field.
-def find_mined_build_pairs(repo: str, error_if_not_found: bool = True) -> Response:
-    log.debug('Trying to find mined build pair with repo {}.'.format(repo))
-    return _get(_mined_build_pairs_repo_endpoint(repo), error_if_not_found)
+def find_mined_build_pair(object_id: str, error_if_not_found: bool = True) -> Response:
+    log.debug('Trying to find mined build pairs for ObjectId {}.'.format(object_id))
+    return _get(_mined_build_pairs_object_id_endpoint(object_id), error_if_not_found)
 
 
 def list_mined_build_pairs() -> List:
@@ -88,6 +86,14 @@ def filter_mined_build_pairs(api_filter: str) -> List:
 
 def count_mined_build_pairs() -> int:
     return _count(_mined_build_pairs_endpoint())
+
+
+def filter_mined_build_pairs_for_repo(repo: str) -> List:
+    """
+    Returns a list of build pairs mined from `repo`. Returns an empty list if no build pairs for `repo` are found or if
+    `repo` has not yet been mined.
+    """
+    return _filter(_mined_build_pairs_endpoint(), '{{"repo": "{}"}}'.format(repo))
 
 
 ###################################
@@ -300,12 +306,12 @@ def _mined_build_pairs_endpoint() -> Endpoint:
     return _endpoint(_MINED_BUILD_PAIRS_RESOURCE)
 
 
-def _mined_build_pairs_repo_endpoint(repo: str) -> Endpoint:
-    if not isinstance(repo, str):
+def _mined_build_pairs_object_id_endpoint(object_id: str) -> Endpoint:
+    if not isinstance(object_id, str):
         raise TypeError
-    if not repo:
+    if not object_id:
         raise ValueError
-    return '/'.join([_mined_build_pairs_endpoint(), repo])
+    return '/'.join([_mined_build_pairs_endpoint(), object_id])
 
 
 def _email_subscribers_endpoint() -> Endpoint:
