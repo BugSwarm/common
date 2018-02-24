@@ -104,6 +104,7 @@ def remove_mined_build_pairs_for_repo(repo: str) -> bool:
     """
     for bp in filter_mined_build_pairs_for_repo(repo):
         if not _delete(_mined_build_pair_object_id_endpoint(bp['_id'])):
+            log.error('Could not remove an existing mined build pair for {}.'.format(repo))
             return False
     return True
 
@@ -114,11 +115,9 @@ def replace_mined_build_pairs_for_repo(repo: str, new_build_pairs: List[Dict]) -
     pairs for `repo` in `new_build_pairs`.
     """
     if not remove_mined_build_pairs_for_repo(repo):
-        log.error('Could not remove an existing mined build pair for {}. Exiting.'.format(repo))
         return False
     for bp in new_build_pairs:
         if not insert_mined_build_pair(bp):
-            log.error('Could not insert mined build pair. Exiting.')
             return False
 
 
