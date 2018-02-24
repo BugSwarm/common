@@ -121,6 +121,7 @@ def replace_mined_build_pairs_for_repo(repo: str, new_build_pairs: List[Dict]) -
         if not insert_mined_build_pair(bp):
             log.error('While replacing mined build pairs, an insertion failed.')
             return False
+    return True
 
 
 ###################################
