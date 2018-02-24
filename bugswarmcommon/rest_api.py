@@ -73,7 +73,7 @@ def insert_mined_build_pair(mined_build_pair) -> Response:
 
 def find_mined_build_pair(object_id: str, error_if_not_found: bool = True) -> Response:
     log.debug('Trying to find mined build pairs for ObjectId {}.'.format(object_id))
-    return _get(_mined_build_pairs_object_id_endpoint(object_id), error_if_not_found)
+    return _get(_mined_build_pair_object_id_endpoint(object_id), error_if_not_found)
 
 
 def list_mined_build_pairs() -> List:
@@ -98,7 +98,7 @@ def filter_mined_build_pairs_for_repo(repo: str) -> List:
 
 def remove_mined_build_pairs_for_repo(repo: str) -> bool:
     for bp in filter_mined_build_pairs_for_repo(repo):
-        if not _delete(_mined_build_pairs_object_id_endpoint(bp['_id'])):
+        if not _delete(_mined_build_pair_object_id_endpoint(bp['_id'])):
             return False
     return True
 
@@ -313,7 +313,7 @@ def _mined_build_pairs_endpoint() -> Endpoint:
     return _endpoint(_MINED_BUILD_PAIRS_RESOURCE)
 
 
-def _mined_build_pairs_object_id_endpoint(object_id: str) -> Endpoint:
+def _mined_build_pair_object_id_endpoint(object_id: str) -> Endpoint:
     if not isinstance(object_id, str):
         raise TypeError
     if not object_id:
