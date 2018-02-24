@@ -97,6 +97,11 @@ def filter_mined_build_pairs_for_repo(repo: str) -> List:
 
 
 def remove_mined_build_pairs_for_repo(repo: str) -> bool:
+    """
+    Non-atomically remove the existing mined build pairs for `repo`.
+
+    If your goal is to replace mined build pairs for `repo`, you should use `replace_mined_build_pairs_for_repo`.
+    """
     for bp in filter_mined_build_pairs_for_repo(repo):
         if not _delete(_mined_build_pair_object_id_endpoint(bp['_id'])):
             return False
