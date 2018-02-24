@@ -232,7 +232,7 @@ def _insert(endpoint: Endpoint, entity, singular_entity_name: str = 'entity') ->
     log.debug('Trying to insert {}.'.format(singular_entity_name))
     resp = _post(endpoint, entity)
     if resp.status_code == 422:
-        log.error('The', singular_entity_name, 'was not added because it failed validation.')
+        log.error('The', singular_entity_name, 'was not inserted because it failed validation.')
         log.error(pprint.pformat(entity))
         log.error(resp.content)
     return resp
