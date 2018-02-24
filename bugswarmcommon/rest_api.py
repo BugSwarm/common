@@ -96,6 +96,13 @@ def filter_mined_build_pairs_for_repo(repo: str) -> List:
     return _filter(_mined_build_pairs_endpoint(), '{{"repo": "{}"}}'.format(repo))
 
 
+def remove_mined_build_pairs_for_repo(repo: str) -> bool:
+    for bp in filter_mined_build_pairs_for_repo(repo):
+        if not _delete(_mined_build_pairs_object_id_endpoint(bp['_id'])):
+            return False
+    return True
+
+
 ###################################
 # Email Subscriber REST methods
 ###################################
