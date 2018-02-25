@@ -14,6 +14,7 @@ from . import log
 _BASE_URL = 'http://52.173.92.238/api/v1'
 _ARTIFACTS_RESOURCE = 'artifacts'
 _MINED_BUILD_PAIRS_RESOURCE = 'minedBuildPairs'
+_MINED_PROJECTS_RESOURCE = 'minedProjects'
 _EMAIL_SUBSCRIBERS_RESOURCE = 'emailSubscribers'
 
 Endpoint = str
@@ -125,6 +126,40 @@ def replace_mined_build_pairs_for_repo(repo: str, new_build_pairs: List[Dict]) -
 
 
 ###################################
+# Mined Project REST methods
+###################################
+
+def insert_mined_project(mined_project) -> Response:
+    return _insert(_mined_projects_endpoint(), mined_project, 'mined project')
+
+
+def find_mined_project(repo: str, error_if_not_found: bool = True) -> Response:
+    log.debug('Trying to find mined project with repo {}.'.format(repo))
+    return _get(_mined_project_repo_endpoint(repo), error_if_not_found)
+
+
+def list_mined_projects() -> List:
+    return _list(_mined_projects_endpoint())
+
+
+def filter_mined_projects(api_filter: str) -> List:
+    return _filter(_mined_projects_endpoint(), api_filter)
+
+
+def count_mined_projects() -> int:
+    return _count(_mined_projects_endpoint())
+
+
+def upsert_mined_project(mined_project) -> Response:
+    """
+    Upsert a mined project. Can be used for initial mining or re-mining of a project.
+    """
+    repo = mined_project.get('repo')
+    assert repo
+    return _upsert(_mined_project_repo_endpoint(repo), mined_project, 'mined project')
+
+
+###################################
 # Email Subscriber REST methods
 ###################################
 
@@ -211,6 +246,25 @@ def _patch(endpoint: Endpoint, data) -> Response:
     return resp
 
 
+def _put(endpoint: Endpoint, data) -> Response:
+    if not isinstance(endpoint, Endpoint):
+        raise TypeError
+    if not endpoint:
+        raise ValueError
+    # First get the entity's etag.
+    etag = _get(endpoint).json()['_etag']
+    # Now replace the entity.
+    headers = {
+        'Content-Type': 'application/json',
+        'If-Match': etag,
+    }
+    resp = requests.put(endpoint, json.dumps(data), headers=headers)
+    if not resp.ok:
+        log.error(resp.url)
+        log.error(resp.content)
+    return resp
+
+
 def _delete(endpoint: Endpoint) -> Response:
     if not isinstance(endpoint, Endpoint):
         raise TypeError
@@ -254,6 +308,26 @@ def _insert(endpoint: Endpoint, entity, singular_entity_name: str = 'entity') ->
     resp = _post(endpoint, entity)
     if resp.status_code == 422:
         log.error('The', singular_entity_name, 'was not inserted because it failed validation.')
+        log.error(pprint.pformat(entity))
+        log.error(resp.content)
+    return resp
+
+
+def _upsert(endpoint: Endpoint, entity, singular_entity_name: str = 'entity') -> Response:
+    if entity is None:
+        raise TypeError
+    if not isinstance(endpoint, Endpoint):
+        raise TypeError
+    if not endpoint:
+        raise ValueError
+    if not isinstance(singular_entity_name, str):
+        raise TypeError
+    if not singular_entity_name:
+        raise ValueError
+    log.debug('Trying to upsert {}.'.format(singular_entity_name))
+    resp = _put(endpoint, entity)
+    if resp.status_code == 422:
+        log.error('The', singular_entity_name, 'was not upserted because it failed validation.')
         log.error(pprint.pformat(entity))
         log.error(resp.content)
     return resp
@@ -340,6 +414,18 @@ def _mined_build_pair_object_id_endpoint(object_id: str) -> Endpoint:
     if not object_id:
         raise ValueError
     return '/'.join([_mined_build_pairs_endpoint(), object_id])
+
+
+def _mined_projects_endpoint() -> Endpoint:
+    return _endpoint(_MINED_PROJECTS_RESOURCE)
+
+
+def _mined_project_repo_endpoint(repo: str) -> Endpoint:
+    if not isinstance(repo, str):
+        raise TypeError
+    if not repo:
+        raise ValueError
+    return '/'.join([_mined_projects_endpoint(), repo])
 
 
 def _email_subscribers_endpoint() -> Endpoint:
