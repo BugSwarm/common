@@ -47,7 +47,8 @@ def count_artifacts() -> int:
 
 def set_artifact_metric(image_tag: str, metric_name: str, metric_value) -> Response:
     """
-    Add a metric to an existing artifact. The value of the metric can be any valid database type.
+    Add a metric to an existing artifact.
+    The value of the metric can be any valid database type.
 
     If the metric with name `metric_name` already exists, then its value will be overridden with `metric_value`.
     Otherwise, the metric will be created with value `metric_value`.
@@ -57,6 +58,10 @@ def set_artifact_metric(image_tag: str, metric_name: str, metric_value) -> Respo
     :param metric_value: The new value of the metric.
     :return: The response object.
     """
+    if not isinstance(image_tag, str):
+        raise TypeError
+    if not image_tag:
+        raise ValueError
     if not isinstance(metric_name, str):
         raise TypeError
     if not metric_name:
@@ -157,6 +162,31 @@ def upsert_mined_project(mined_project) -> Response:
     repo = mined_project.get('repo')
     assert repo
     return _upsert(_mined_project_repo_endpoint(repo), mined_project, 'mined project')
+
+
+def set_mined_project_metric(repo: str, metric_name: str, metric_value) -> Response:
+    """
+    Add a mining progression metric to an existing mined project.
+    The value of the metric can be any valid database type.
+
+    If the metric with name `metric_name` already exists, then its value will be overridden with `metric_value`.
+    Otherwise, the metric will be created with value `metric_value`.
+
+    :param repo: The repository slug identifying the mined project to update.
+    :param metric_name: The name of the metric to add or update.
+    :param metric_value: The new value of the metric.
+    :return: The response object.
+    """
+    if not isinstance(repo, str):
+        raise TypeError
+    if not repo:
+        raise ValueError
+    if not isinstance(metric_name, str):
+        raise TypeError
+    if not metric_name:
+        raise ValueError
+    updates = {'metrics.{}'.format(metric_name): metric_value}
+    return _patch(_mined_project_repo_endpoint(repo), updates)
 
 
 ###################################
