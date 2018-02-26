@@ -164,7 +164,7 @@ def upsert_mined_project(mined_project) -> Response:
     return _upsert(_mined_project_repo_endpoint(repo), mined_project, 'mined project')
 
 
-def set_mined_project_metric(repo: str, metric_name: str, metric_value) -> Response:
+def set_mined_project_progression_metric(repo: str, metric_name: str, metric_value) -> Response:
     """
     Add a mining progression metric to an existing mined project.
     The value of the metric can be any valid database type.
