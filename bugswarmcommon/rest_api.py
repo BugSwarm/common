@@ -185,7 +185,7 @@ def set_mined_project_progression_metric(repo: str, metric_name: str, metric_val
         raise TypeError
     if not metric_name:
         raise ValueError
-    updates = {'metrics.{}'.format(metric_name): metric_value}
+    updates = {'progression_metrics.{}'.format(metric_name): metric_value}
     return _patch(_mined_project_repo_endpoint(repo), updates)
 
 
