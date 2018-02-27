@@ -276,18 +276,15 @@ def _patch(endpoint: Endpoint, data) -> Response:
     return resp
 
 
-def _put(endpoint: Endpoint, data) -> Response:
+def _put(endpoint: Endpoint, data, etag: str = None) -> Response:
     if not isinstance(endpoint, Endpoint):
         raise TypeError
     if not endpoint:
         raise ValueError
-    # First get the entity's etag.
-    etag = _get(endpoint).json()['_etag']
+    headers = {'Content-Type': 'application/json'}
+    if etag:
+        headers['If-Match'] = etag
     # Now replace the entity.
-    headers = {
-        'Content-Type': 'application/json',
-        'If-Match': etag,
-    }
     resp = requests.put(endpoint, json.dumps(data), headers=headers)
     if not resp.ok:
         log.error(resp.url)
@@ -355,7 +352,10 @@ def _upsert(endpoint: Endpoint, entity, singular_entity_name: str = 'entity') ->
     if not singular_entity_name:
         raise ValueError
     log.debug('Trying to upsert {}.'.format(singular_entity_name))
-    resp = _put(endpoint, entity)
+    # First, check if the entity exists. If it does, then pass its etag.
+    get_resp = _get(endpoint, error_if_not_found=False)
+    etag = get_resp.json()['_etag'] if get_resp.ok else None
+    resp = _put(endpoint, entity, etag)
     if resp.status_code == 422:
         log.error('The', singular_entity_name, 'was not upserted because it failed validation.')
         log.error(pprint.pformat(entity))
