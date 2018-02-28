@@ -45,6 +45,12 @@ def count_artifacts() -> int:
     return _count(_artifacts_endpoint())
 
 
+def upsert_artifact(artifact) -> Response:
+    image_tag = artifact.get('image_tag')
+    assert image_tag
+    return _upsert(_artifact_image_tag_endpoint(image_tag), artifact, 'artifact')
+
+
 def set_artifact_metric(image_tag: str, metric_name: str, metric_value) -> Response:
     """
     Add a metric to an existing artifact.
