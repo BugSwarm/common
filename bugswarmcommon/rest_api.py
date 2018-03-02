@@ -2,6 +2,7 @@ import json
 import pprint
 
 from typing import Dict
+from typing import Generator
 from typing import List
 from urllib.parse import urljoin
 
@@ -33,12 +34,12 @@ def find_artifact(image_tag: str, error_if_not_found: bool = True) -> Response:
     return _get(_artifact_image_tag_endpoint(image_tag), error_if_not_found)
 
 
-def list_artifacts() -> List:
-    return _list(_artifacts_endpoint())
+def list_artifacts() -> Generator:
+    yield from _list(_artifacts_endpoint())
 
 
-def filter_artifacts(api_filter: str) -> List:
-    return _filter(_artifacts_endpoint(), api_filter)
+def filter_artifacts(api_filter: str) -> Generator:
+    yield from _filter(_artifacts_endpoint(), api_filter)
 
 
 def count_artifacts() -> int:
@@ -89,24 +90,24 @@ def find_mined_build_pair(object_id: str, error_if_not_found: bool = True) -> Re
     return _get(_mined_build_pair_object_id_endpoint(object_id), error_if_not_found)
 
 
-def list_mined_build_pairs() -> List:
-    return _list(_mined_build_pairs_endpoint())
+def list_mined_build_pairs() -> Generator:
+    yield from _list(_mined_build_pairs_endpoint())
 
 
-def filter_mined_build_pairs(api_filter: str) -> List:
-    return _filter(_mined_build_pairs_endpoint(), api_filter)
+def filter_mined_build_pairs(api_filter: str) -> Generator:
+    yield from _filter(_mined_build_pairs_endpoint(), api_filter)
 
 
 def count_mined_build_pairs() -> int:
     return _count(_mined_build_pairs_endpoint())
 
 
-def filter_mined_build_pairs_for_repo(repo: str) -> List:
+def filter_mined_build_pairs_for_repo(repo: str) -> Generator:
     """
     Returns a list of build pairs mined from `repo`. Returns an empty list if no build pairs for `repo` are found or if
     `repo` has not yet been mined.
     """
-    return _filter(_mined_build_pairs_endpoint(), '{{"repo": "{}"}}'.format(repo))
+    yield from _filter(_mined_build_pairs_endpoint(), '{{"repo": "{}"}}'.format(repo))
 
 
 def remove_mined_build_pairs_for_repo(repo: str) -> bool:
@@ -149,12 +150,12 @@ def find_mined_project(repo: str, error_if_not_found: bool = True) -> Response:
     return _get(_mined_project_repo_endpoint(repo), error_if_not_found)
 
 
-def list_mined_projects() -> List:
-    return _list(_mined_projects_endpoint())
+def list_mined_projects() -> Generator:
+    yield from _list(_mined_projects_endpoint())
 
 
-def filter_mined_projects(api_filter: str) -> List:
-    return _filter(_mined_projects_endpoint(), api_filter)
+def filter_mined_projects(api_filter: str) -> Generator:
+    yield from _filter(_mined_projects_endpoint(), api_filter)
 
 
 def count_mined_projects() -> int:
@@ -208,12 +209,12 @@ def find_email_subscriber(email: str, error_if_not_found: bool = True) -> Respon
     return _get(_email_subscriber_email_endpoint(email), error_if_not_found)
 
 
-def list_email_subscribers() -> List:
-    return _list(_email_subscribers_endpoint())
+def list_email_subscribers() -> Generator:
+    yield from _list(_email_subscribers_endpoint())
 
 
-def filter_email_subscribers(api_filter: str) -> List:
-    return _filter(_email_subscribers_endpoint(), api_filter)
+def filter_email_subscribers(api_filter: str) -> Generator:
+    yield from _filter(_email_subscribers_endpoint(), api_filter)
 
 
 def count_email_subscribers() -> int:
@@ -370,36 +371,35 @@ def _upsert(endpoint: Endpoint, entity, singular_entity_name: str = 'entity') ->
 
 
 # Returns a list of all the results by following the next link chain starting with start_link.
-def _iter_pages(start_link: str) -> List:
+def _iter_pages(start_link: str) -> Generator:
     if not isinstance(start_link, str):
         raise TypeError
     if not start_link:
         raise ValueError
-    results = []
     next_link = start_link
     while next_link:
         next_json = _get(next_link).json()
         try:
-            results += next_json['_items']
+            results = next_json['_items']
         except KeyError:
             break
+        yield from results
         try:
             next_link = urljoin(next_link, next_json['_links']['next']['href'])
         except KeyError:
             break
-    return results
 
 
 # Returns all results from the current page to the last page, inclusive.
-def _list(endpoint: Endpoint) -> List:
+def _list(endpoint: Endpoint) -> Generator:
     if not isinstance(endpoint, Endpoint):
         raise TypeError
     if not endpoint:
         raise ValueError
-    return _iter_pages(endpoint)
+    yield from _iter_pages(endpoint)
 
 
-def _filter(endpoint: Endpoint, api_filter: str) -> List:
+def _filter(endpoint: Endpoint, api_filter: str) -> Generator:
     if not isinstance(endpoint, Endpoint):
         raise TypeError
     if not endpoint:
@@ -410,7 +410,7 @@ def _filter(endpoint: Endpoint, api_filter: str) -> List:
         raise ValueError
     # Append the filter as a url parameter.
     url = '{}?where={}'.format(endpoint, api_filter)
-    return _iter_pages(url)
+    yield from _iter_pages(url)
 
 
 def _count(endpoint: Endpoint) -> int:
