@@ -8,6 +8,7 @@ from . import log
 _BASE_URL = 'https://api.travis-ci.org'
 # Number of seconds to sleep before retrying. Five seconds has been long enough to obey the Travis API rate limit.
 _SLEEP_SECONDS = 5
+_MAX_SLEEP_SECONDS = 60 * 5  # 5 minutes.
 
 
 class TravisWrapper(object):
@@ -25,6 +26,7 @@ class TravisWrapper(object):
 
     # Potentially raises requests.exceptions.Timeout or requests.exceptions.RequestException.
     def _get(self, address, **kwargs):
+        sleep_seconds = _SLEEP_SECONDS
         while True:
             response = self._session.get(address, params=kwargs)
             code = response.status_code
@@ -36,8 +38,9 @@ class TravisWrapper(object):
             elif code == 429:
                 log.warning(
                     'The Travis API returned status code 429 Too Many Requests. '
-                    'Retrying after sleeping for {} seconds.'.format(_SLEEP_SECONDS))
-                time.sleep(_SLEEP_SECONDS)
+                    'Retrying after sleeping for {} seconds.'.format(sleep_seconds))
+                time.sleep(sleep_seconds)
+                sleep_seconds = min(sleep_seconds * 2, _MAX_SLEEP_SECONDS)
             else:
                 log.error('Get request for {} returned {}.'.format(address, code))
                 raise requests.exceptions.ConnectionError('{} download failed. Error code is {}.'.format(address, code))
@@ -50,8 +53,7 @@ class TravisWrapper(object):
                 result = self._get(address, after_number=after_number)
             if not result:
                 return
-            for i in result:
-                yield i
+            yield from result
             after_number = result[-1]['number']
             if after_number == '1':
                 return
