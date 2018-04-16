@@ -1,10 +1,12 @@
 import json
 import pprint
+
 from typing import Dict
 from typing import List
 from urllib.parse import urljoin
 
 import requests
+
 from requests import Response
 
 from . import log

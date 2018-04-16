@@ -1,7 +1,9 @@
 import os
 import time
 import urllib.request
+
 from typing import Union
+
 from urllib.error import URLError
 
 from . import log
