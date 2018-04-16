@@ -1,2 +1,2 @@
 # Common Library
-Library of common modules used throughout the BugSwarm toolset
+Library of modules used throughout the BugSwarm toolset
