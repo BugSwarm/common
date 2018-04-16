@@ -6,12 +6,12 @@ with open('README.md') as f:
 setup(
     name='bugswarm-common',
     version='0.0.1',
-    description='Library of modules used throughout the BugSwarm toolset',
-    long_description=readme,
-    license='BSD',
+    url='https://github.com/BugSwarm/common',
     author='BugSwarm',
     author_email='dev.bugswarm@gmail.com',
-    url='https://github.com/BugSwarm/common',
+
+    description='Library of modules used throughout the BugSwarm toolset',
+    long_description=readme,
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: BSD License',
