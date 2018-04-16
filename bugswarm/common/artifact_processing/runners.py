@@ -1,7 +1,6 @@
 import os
-
-from concurrent.futures import as_completed
 from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import as_completed
 from distutils.dir_util import copy_tree
 from typing import Callable
 from typing import List
