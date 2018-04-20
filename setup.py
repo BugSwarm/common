@@ -17,6 +17,9 @@ setup(
         'License :: OSI Approved :: BSD License',
     ],
     zip_safe=False,
+    namespace_packages=[
+        'bugswarm',
+    ],
     packages=[
         'bugswarm.common',
     ],
