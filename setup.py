@@ -1,4 +1,5 @@
 from setuptools import setup
+from setuptools import find_packages
 
 with open('README.md') as f:
     readme = f.read()
@@ -20,9 +21,7 @@ setup(
     namespace_packages=[
         'bugswarm',
     ],
-    packages=[
-        'bugswarm.common',
-    ],
+    packages=find_packages(),
     install_requires=[
         'requests==2.18.4',
         'CacheControl==0.12.3',
