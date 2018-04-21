@@ -18,10 +18,10 @@ setup(
         'License :: OSI Approved :: BSD License',
     ],
     zip_safe=False,
+    packages=find_packages(),
     namespace_packages=[
         'bugswarm',
     ],
-    packages=find_packages(),
     install_requires=[
         'requests==2.18.4',
         'CacheControl==0.12.3',
