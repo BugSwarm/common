@@ -12,7 +12,6 @@ setup(
     author_email='dev.bugswarm@gmail.com',
 
     description='Library of modules used throughout the BugSwarm toolset',
-    long_description=readme,
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: BSD License',
