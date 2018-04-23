@@ -6,7 +6,7 @@ with open('README.md') as f:
 
 setup(
     name='bugswarm-common',
-    version='0.0.1',
+    version='0.0.2',
     url='https://github.com/BugSwarm/common',
     author='BugSwarm',
     author_email='dev.bugswarm@gmail.com',
