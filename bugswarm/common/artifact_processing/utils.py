@@ -58,6 +58,7 @@ def run_artifact(image_tag: str, command: str):
     """
     Assumes that the caller wants to use the sandbox and stdin piping features of the BugSwarm client since this
     function will likely be called in the context of an artifact processing workflow.
+
     :param image_tag: The image tag representing the artifact image to run.
     :param command: A string containing command(s) to execute in the artifact container. Will be piped to the container
                     process' standard input stream.
