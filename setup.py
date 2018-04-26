@@ -1,9 +1,6 @@
 from setuptools import setup
 from setuptools import find_packages
 
-with open('README.md') as f:
-    readme = f.read()
-
 setup(
     name='bugswarm-common',
     version='0.0.2',
