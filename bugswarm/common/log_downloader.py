@@ -13,7 +13,10 @@ from . import log
 _DEFAULT_RETRIES = 3
 
 
-def download_log(job_id: Union[str, int], destination: str, overwrite: bool = True, retries: int = _DEFAULT_RETRIES):
+def download_log(job_id: Union[str, int],
+                 destination: str,
+                 overwrite: bool = True,
+                 retries: int = _DEFAULT_RETRIES) -> bool:
     """
     Downloads a Travis job log and stores it at destination.
 
@@ -54,7 +57,7 @@ def download_log(job_id: Union[str, int], destination: str, overwrite: bool = Tr
 def download_logs(job_ids: List[Union[str, int]],
                   destinations: List[str],
                   overwrite: bool = True,
-                  retries: int = _DEFAULT_RETRIES):
+                  retries: int = _DEFAULT_RETRIES) -> bool:
     """
     Downloads one or more Travis job logs in parallel and stores them at the given destinations.
     This function calls `download_log` and raises the first exception it catches from that function, if any.
