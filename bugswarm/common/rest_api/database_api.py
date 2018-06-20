@@ -9,10 +9,10 @@ from urllib.parse import urljoin
 import requests
 from requests import Response
 
+from .exceptions import InvalidTokenError
 from bugswarm.common import log
 
 Endpoint = str
-Token = str
 
 
 class DatabaseAPI(object):
@@ -24,8 +24,9 @@ class DatabaseAPI(object):
     _MINED_BUILD_PAIRS_RESOURCE = 'minedBuildPairs'
     _MINED_PROJECTS_RESOURCE = 'minedProjects'
     _EMAIL_SUBSCRIBERS_RESOURCE = 'emailSubscribers'
+    _ACCOUNTS_RESOURCE = 'accounts'
 
-    def __init__(self, token: Optional[Token] = None):
+    def __init__(self, token: Optional[str] = None):
         """
         Provide a valid authentication token in order to use the endpoints accessible by the account that is associated
         with the token. If an invalid authentication token is provided, the initializer will raise an exception.
@@ -40,7 +41,9 @@ class DatabaseAPI(object):
             raise TypeError
         if not token:
             raise ValueError
-        # TODO: Ensure the token is associated with an account.
+        # Ensure the token is associated with an account.
+        if not self.filter_account_for_token(self.token):
+            raise InvalidTokenError
         self.token = token
 
     ###################################
@@ -223,6 +226,29 @@ class DatabaseAPI(object):
 
     def unsubscribe_email_subscriber(self, email: str) -> Response:
         return self._delete(DatabaseAPI._email_subscriber_email_endpoint(email))
+
+    ###################################
+    # Account REST methods
+    ###################################
+
+    def insert_account(self, account) -> Response:
+        return self._insert(DatabaseAPI._accounts_endpoint(), account, 'account')
+
+    def find_account(self, email: str, error_if_not_found: bool = True) -> Response:
+        log.debug('Trying to find account with email {}.'.format(email))
+        return self._get(DatabaseAPI._account_email_endpoint(email), error_if_not_found)
+
+    def list_accounts(self) -> List:
+        return self._list(DatabaseAPI._accounts_endpoint())
+
+    def filter_account_for_token(self, token: str) -> Response:
+        pass
+
+    def filter_accounts(self, api_filter: str) -> List:
+        return self._filter(DatabaseAPI._accounts_endpoint(), api_filter)
+
+    def count_accounts(self) -> int:
+        return self._count(DatabaseAPI._accounts_endpoint())
 
     ###################################
     # Convenience REST methods
@@ -458,3 +484,15 @@ class DatabaseAPI(object):
         if not email:
             raise ValueError
         return urljoin(DatabaseAPI._email_subscribers_endpoint(), email)
+
+    @staticmethod
+    def _accounts_endpoint() -> Endpoint:
+        return DatabaseAPI._endpoint(DatabaseAPI._ACCOUNTS_RESOURCE)
+
+    @staticmethod
+    def _account_email_endpoint(email: str) -> Endpoint:
+        if not isinstance(email, str):
+            raise TypeError
+        if not email:
+            raise ValueError
+        return urljoin(DatabaseAPI._accounts_endpoint(), email)
