@@ -4,7 +4,7 @@ Convenience methods and constants to facilitate a processing workflow involving 
 import os
 import shutil
 
-from ..rest_api import find_artifact
+from bugswarm.common.rest_api.database_api import find_artifact
 from ..shell_wrapper import ShellWrapper
 
 REPOS_DIR = '/home/travis/build'
