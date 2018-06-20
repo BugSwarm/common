@@ -5,7 +5,7 @@ class APIException(IOError):
     pass
 
 
-class InvalidToken(APIException):
+class InvalidTokenError(APIException):
     """
     An invalid authentication token was provided.
 
