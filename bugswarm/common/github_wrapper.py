@@ -69,6 +69,8 @@ class GitHubWrapper(object):
                 elif response.status_code == 451:  # Repository access blocked.
                     log.error('Repository access blocked:', url)
                     return None, None
+                elif response.status_code == 422:
+                    return None, None
                 else:
                     log.error('Request for url failed:', url)
                     log.error('Exception:', e)

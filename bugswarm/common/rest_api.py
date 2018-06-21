@@ -9,7 +9,7 @@ from requests import Response
 
 from . import log
 
-_BASE_URL = 'http://52.173.92.238/api/v1'
+_BASE_URL = 'http://23.101.122.54/api/v1'
 _ARTIFACTS_RESOURCE = 'artifacts'
 _MINED_BUILD_PAIRS_RESOURCE = 'minedBuildPairs'
 _MINED_PROJECTS_RESOURCE = 'minedProjects'
