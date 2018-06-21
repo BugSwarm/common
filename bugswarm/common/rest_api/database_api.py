@@ -7,12 +7,31 @@ from typing import Optional
 from urllib.parse import urljoin
 
 import requests
+import requests.auth
 from requests import Response
 
 from .exceptions import InvalidTokenError
 from bugswarm.common import log
 
 Endpoint = str
+
+
+class TokenAuth(requests.auth.AuthBase):
+    def __init__(self, token: Optional[str] = None):
+        self.token = token
+
+    def __eq__(self, other):
+        return all([
+            self.token == getattr(other, 'token', None),
+        ])
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __call__(self, r):
+        if self.token:
+            r.headers['Authorization'] = 'Basic {}'.format(self.token)
+        return r
 
 
 class DatabaseAPI(object):
@@ -37,7 +56,7 @@ class DatabaseAPI(object):
         :param token: An authentication token.
         :raises InvalidToken: When an invalid authentication token is provided.
         """
-        if not isinstance(token, str):
+        if token is not None and not isinstance(token, str):
             raise TypeError
         if not token:
             raise ValueError
@@ -259,7 +278,7 @@ class DatabaseAPI(object):
             raise TypeError
         if not endpoint:
             raise ValueError
-        resp = requests.get(endpoint)
+        resp = requests.get(endpoint, headers={}, auth=TokenAuth(self.token))
         # Do not print an error message if the entity was not expected to be found and we got a 404 status code.
         not_found = resp.status_code == 404
         if not_found and not error_if_not_found:
@@ -275,7 +294,7 @@ class DatabaseAPI(object):
         if not endpoint:
             raise ValueError
         headers = {'Content-Type': 'application/json'}
-        resp = requests.post(endpoint, json.dumps(data), headers=headers)
+        resp = requests.post(endpoint, json.dumps(data), headers=headers, auth=TokenAuth(self.token))
         if not resp.ok:
             log.error(resp.url)
             log.error(resp.content)
@@ -293,7 +312,7 @@ class DatabaseAPI(object):
             'Content-Type': 'application/json',
             'If-Match': etag,
         }
-        resp = requests.patch(endpoint, json.dumps(data), headers=headers)
+        resp = requests.patch(endpoint, json.dumps(data), headers=headers, auth=TokenAuth(self.token))
         if not resp.ok:
             log.error(resp.url)
             log.error(resp.content)
@@ -308,7 +327,7 @@ class DatabaseAPI(object):
         if etag:
             headers['If-Match'] = etag
         # Now replace the entity.
-        resp = requests.put(endpoint, json.dumps(data), headers=headers)
+        resp = requests.put(endpoint, json.dumps(data), headers=headers, auth=TokenAuth(self.token))
         if not resp.ok:
             log.error(resp.url)
             log.error(resp.content)
@@ -323,7 +342,7 @@ class DatabaseAPI(object):
         etag = self._get(endpoint).json()['_etag']
         headers = {'If-Match': etag}
         # Now delete the entity.
-        resp = requests.delete(endpoint, headers=headers)
+        resp = requests.delete(endpoint, headers=headers, auth=TokenAuth(self.token))
         if not resp.ok:
             log.error(resp.url)
             log.error(resp.content)
