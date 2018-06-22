@@ -11,6 +11,8 @@ import requests.auth
 from requests import Response
 
 from .exceptions import InvalidTokenError
+from bugswarm.common.decorators.classproperty import classproperty
+from bugswarm.common.decorators.classproperty import classproperty_support
 from bugswarm.common import log
 
 __all__ = ['Endpoint', 'DatabaseAPI']
@@ -36,6 +38,7 @@ class TokenAuth(requests.auth.AuthBase):
         return r
 
 
+@classproperty_support
 class DatabaseAPI(object):
     """
     This class encapsulates access to the BugSwarm metadata database via the REST API.
@@ -69,12 +72,15 @@ class DatabaseAPI(object):
         self.token = token
 
     ###################################
-    # Properties
+    # Class properties
     ###################################
 
-    @property
-    def base_url(self) -> Endpoint:
-        return self._BASE_URL
+    @classproperty
+    def base_url(cls) -> Endpoint:
+        """
+        Exposes the base URL of the API as a read-only class property.
+        """
+        return cls._BASE_URL
 
     ###################################
     # Artifact REST methods
@@ -465,7 +471,7 @@ class DatabaseAPI(object):
             raise TypeError
         if not resource:
             raise ValueError
-        return urljoin(DatabaseAPI._BASE_URL, resource)
+        return urljoin(DatabaseAPI.base_url, resource)
 
     @staticmethod
     def _artifacts_endpoint() -> Endpoint:
