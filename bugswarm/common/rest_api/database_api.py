@@ -13,6 +13,8 @@ from requests import Response
 from .exceptions import InvalidTokenError
 from bugswarm.common import log
 
+__all__ = ['Endpoint', 'DatabaseAPI']
+
 Endpoint = str
 
 
@@ -65,6 +67,14 @@ class DatabaseAPI(object):
         if not self.filter_account_for_token(self.token):
             raise InvalidTokenError
         self.token = token
+
+    ###################################
+    # Properties
+    ###################################
+
+    @property
+    def base_url(self) -> Endpoint:
+        return self._BASE_URL
 
     ###################################
     # Artifact REST methods
