@@ -50,6 +50,7 @@ class DatabaseAPI(object):
         Provide a valid authentication token in order to use the endpoints accessible by the account that is associated
         with the token. If an invalid authentication token is provided, the initializer will raise an exception.
 
+        TODO(ndmeiri): Make sure the following sentence is true or remove it and modify run.py in the database.
         If no authentication token is provided, then only the set of public endpoints will be available and attempting
         to use non-public APIs will raise an exception.
 
