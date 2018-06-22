@@ -43,7 +43,7 @@ class DatabaseAPI(object):
     """
     This class encapsulates programmatic access to the BugSwarm metadata database via the REST API.
     """
-    _BASE_URL = 'http://52.173.92.238/api/v1'
+    _BASE_URL = 'http://23.101.122.54/api/v1'
     _ARTIFACTS_RESOURCE = 'artifacts'
     _MINED_BUILD_PAIRS_RESOURCE = 'minedBuildPairs'
     _MINED_PROJECTS_RESOURCE = 'minedProjects'
