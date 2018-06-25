@@ -11,7 +11,6 @@ import requests.auth
 
 from requests import Response
 
-from .exceptions import InvalidTokenError
 from bugswarm.common.decorators.classproperty import classproperty
 from bugswarm.common.decorators.classproperty import classproperty_support
 from bugswarm.common import log
