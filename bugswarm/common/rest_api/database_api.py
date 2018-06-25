@@ -3,7 +3,6 @@ import pprint
 
 from typing import Dict
 from typing import List
-from typing import Optional
 from urllib.parse import urljoin
 
 import requests
@@ -20,30 +19,15 @@ __all__ = ['Endpoint', 'DatabaseAPI']
 Endpoint = str
 
 
-class TokenAuth(requests.auth.AuthBase):
-    def __init__(self, token: Optional[str] = None):
-        self.token = token
-
-    def __eq__(self, other):
-        return all([
-            self.token == getattr(other, 'token', None),
-        ])
-
-    def __ne__(self, other):
-        return not self == other
-
-    def __call__(self, r):
-        if self.token:
-            r.headers['Authorization'] = 'Basic {}'.format(self.token)
-        return r
-
-
 @classproperty_support
 class DatabaseAPI(object):
     """
     This class encapsulates programmatic access to the BugSwarm metadata database via the REST API.
     """
-    _BASE_URL = 'http://api.bugswarm.org/v1'
+    # The base URL must include 'www'. Otherwise, the redirect performed by the backend will cause the requests library
+    # to strip authorization headers, which are needed for authentication.
+    # See https://github.com/requests/requests/issues/2949 for more information.
+    _BASE_URL = 'http://www.api.bugswarm.org/v1'
     _ARTIFACTS_RESOURCE = 'artifacts'
     _MINED_BUILD_PAIRS_RESOURCE = 'minedBuildPairs'
     _MINED_PROJECTS_RESOURCE = 'minedProjects'
@@ -63,6 +47,7 @@ class DatabaseAPI(object):
         if not token:
             raise ValueError
         self.token = token
+        self.auth = requests.auth.HTTPBasicAuth(username=self.token, password='')
 
     ###################################
     # Class properties
@@ -288,7 +273,7 @@ class DatabaseAPI(object):
             raise TypeError
         if not endpoint:
             raise ValueError
-        resp = requests.get(endpoint, headers={}, auth=TokenAuth(self.token))
+        resp = requests.get(endpoint, auth=self.auth)
         # Do not print an error message if the entity was not expected to be found and we got a 404 status code.
         not_found = resp.status_code == 404
         if not_found and not error_if_not_found:
@@ -304,7 +289,7 @@ class DatabaseAPI(object):
         if not endpoint:
             raise ValueError
         headers = {'Content-Type': 'application/json'}
-        resp = requests.post(endpoint, json.dumps(data), headers=headers, auth=TokenAuth(self.token))
+        resp = requests.post(endpoint, json.dumps(data), headers=headers, auth=self.auth)
         if not resp.ok:
             log.error(resp.url)
             log.error(resp.content)
@@ -322,7 +307,7 @@ class DatabaseAPI(object):
             'Content-Type': 'application/json',
             'If-Match': etag,
         }
-        resp = requests.patch(endpoint, json.dumps(data), headers=headers, auth=TokenAuth(self.token))
+        resp = requests.patch(endpoint, json.dumps(data), headers=headers, auth=self.auth)
         if not resp.ok:
             log.error(resp.url)
             log.error(resp.content)
@@ -337,7 +322,7 @@ class DatabaseAPI(object):
         if etag:
             headers['If-Match'] = etag
         # Now replace the entity.
-        resp = requests.put(endpoint, json.dumps(data), headers=headers, auth=TokenAuth(self.token))
+        resp = requests.put(endpoint, json.dumps(data), headers=headers, auth=self.auth)
         if not resp.ok:
             log.error(resp.url)
             log.error(resp.content)
@@ -352,7 +337,7 @@ class DatabaseAPI(object):
         etag = self._get(endpoint).json()['_etag']
         headers = {'If-Match': etag}
         # Now delete the entity.
-        resp = requests.delete(endpoint, headers=headers, auth=TokenAuth(self.token))
+        resp = requests.delete(endpoint, headers=headers, auth=self.auth)
         if not resp.ok:
             log.error(resp.url)
             log.error(resp.content)
