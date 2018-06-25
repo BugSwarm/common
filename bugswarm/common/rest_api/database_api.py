@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 
 import requests
 import requests.auth
+
 from requests import Response
 
 from .exceptions import InvalidTokenError
@@ -43,7 +44,7 @@ class DatabaseAPI(object):
     """
     This class encapsulates programmatic access to the BugSwarm metadata database via the REST API.
     """
-    _BASE_URL = 'http://23.101.122.54/api/v1'
+    _BASE_URL = 'http://api.bugswarm.org/v1'
     _ARTIFACTS_RESOURCE = 'artifacts'
     _MINED_BUILD_PAIRS_RESOURCE = 'minedBuildPairs'
     _MINED_PROJECTS_RESOURCE = 'minedProjects'
