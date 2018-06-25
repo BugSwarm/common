@@ -43,7 +43,7 @@ class DatabaseAPI(object):
     """
     This class encapsulates programmatic access to the BugSwarm metadata database via the REST API.
     """
-    _BASE_URL = 'http://api.bugswarm.org/v1/'
+    _BASE_URL = 'http://api.bugswarm.org/v1'
     _ARTIFACTS_RESOURCE = 'artifacts'
     _MINED_BUILD_PAIRS_RESOURCE = 'minedBuildPairs'
     _MINED_PROJECTS_RESOURCE = 'minedProjects'
@@ -464,7 +464,7 @@ class DatabaseAPI(object):
             raise TypeError
         if not resource:
             raise ValueError
-        return urljoin(DatabaseAPI.base_url, resource)
+        return '/'.join([DatabaseAPI.base_url, resource])
 
     @staticmethod
     def _artifacts_endpoint() -> Endpoint:
@@ -476,7 +476,7 @@ class DatabaseAPI(object):
             raise TypeError
         if not image_tag:
             raise ValueError
-        return urljoin(DatabaseAPI._artifacts_endpoint(), image_tag)
+        return '/'.join([DatabaseAPI._artifacts_endpoint(), image_tag])
 
     @staticmethod
     def _mined_build_pairs_endpoint() -> Endpoint:
@@ -488,7 +488,7 @@ class DatabaseAPI(object):
             raise TypeError
         if not object_id:
             raise ValueError
-        return urljoin(DatabaseAPI._mined_build_pairs_endpoint(), object_id)
+        return '/'.join([DatabaseAPI._mined_build_pairs_endpoint(), object_id])
 
     @staticmethod
     def _mined_projects_endpoint() -> Endpoint:
@@ -500,7 +500,7 @@ class DatabaseAPI(object):
             raise TypeError
         if not repo:
             raise ValueError
-        return urljoin(DatabaseAPI._mined_projects_endpoint(), repo)
+        return '/'.join([DatabaseAPI._mined_projects_endpoint(), repo])
 
     @staticmethod
     def _email_subscribers_endpoint() -> Endpoint:
@@ -512,7 +512,7 @@ class DatabaseAPI(object):
             raise TypeError
         if not email:
             raise ValueError
-        return urljoin(DatabaseAPI._email_subscribers_endpoint(), email)
+        return '/'.join([DatabaseAPI._email_subscribers_endpoint(), email])
 
     @staticmethod
     def _accounts_endpoint() -> Endpoint:
@@ -524,4 +524,4 @@ class DatabaseAPI(object):
             raise TypeError
         if not email:
             raise ValueError
-        return urljoin(DatabaseAPI._accounts_endpoint(), email)
+        return '/'.join([DatabaseAPI._accounts_endpoint(), email])
