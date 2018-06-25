@@ -44,7 +44,7 @@ class DatabaseAPI(object):
     """
     This class encapsulates programmatic access to the BugSwarm metadata database via the REST API.
     """
-    _BASE_URL = 'http://api.bugswarm.org/v1'
+    _BASE_URL = 'http://api.bugswarm.org/v1/'
     _ARTIFACTS_RESOURCE = 'artifacts'
     _MINED_BUILD_PAIRS_RESOURCE = 'minedBuildPairs'
     _MINED_PROJECTS_RESOURCE = 'minedProjects'
@@ -63,9 +63,6 @@ class DatabaseAPI(object):
             raise TypeError
         if not token:
             raise ValueError
-        # Ensure the token is associated with an account.
-        if not self.filter_account_for_token(token):
-            raise InvalidTokenError
         self.token = token
 
     ###################################
@@ -274,8 +271,8 @@ class DatabaseAPI(object):
     def list_accounts(self) -> List:
         return self._list(DatabaseAPI._accounts_endpoint())
 
-    def filter_account_for_token(self, token: str) -> Response:
-        pass
+    def filter_account_for_token(self, token: str) -> List:
+        return self._filter(DatabaseAPI._accounts_endpoint(), '{{"token":"{}"}}'.format(token))
 
     def filter_accounts(self, api_filter: str) -> List:
         return self._filter(DatabaseAPI._accounts_endpoint(), api_filter)
