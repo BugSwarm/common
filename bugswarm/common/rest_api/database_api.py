@@ -64,7 +64,7 @@ class DatabaseAPI(object):
         if not token:
             raise ValueError
         # Ensure the token is associated with an account.
-        if not self.filter_account_for_token(self.token):
+        if not self.filter_account_for_token(token):
             raise InvalidTokenError
         self.token = token
 
