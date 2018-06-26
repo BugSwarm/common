@@ -17,8 +17,7 @@ def read_json(filepath: str):
     Decode JSON data from a file.
 
     :param filepath: Path to the file from which to read JSON data.
-    :raises ValueError:
-    :raises FileNotFoundError:
+    :raises FileNotFoundError: If no file exists at `filepath`.
     :return: The decoded JSON object.
     """
     if not filepath:
@@ -39,8 +38,7 @@ def write_json(filepath: str, data, overwrite: bool = True, encoder: Optional[js
                       file already exists at `filepath`, FileExistsError is raised. Defaults to True.
     :param encoder: The encoder object to use for the JSON encoding. Should be a subclass of json.JSONEncoder.
                     DefaultJSONEncoder is used by default.
-    :raises ValueError:
-    :raises FileExistsError: When a file at `filepath` already exists and `overwrite` is False.
+    :raises FileExistsError: If a file at `filepath` already exists and `overwrite` is False.
     :return: True if the write to `filepath` succeeded.
     """
     if not filepath:
