@@ -388,8 +388,10 @@ class DatabaseAPI(object):
             log.error(resp.content)
         return resp
 
-    # Returns a list of all the results by following the next link chain starting with start_link.
     def _iter_pages(self, start_link: str) -> List:
+        """
+        Returns a list of all the results by following the next link chain starting with `start_link`.
+        """
         if not isinstance(start_link, str):
             raise TypeError
         if not start_link:
@@ -408,8 +410,10 @@ class DatabaseAPI(object):
                 break
         return results
 
-    # Returns all results from the current page to the last page, inclusive.
     def _list(self, endpoint: Endpoint) -> List:
+        """
+        Returns all results from the current page to the last page, inclusive.
+        """
         if not isinstance(endpoint, Endpoint):
             raise TypeError
         if not endpoint:
