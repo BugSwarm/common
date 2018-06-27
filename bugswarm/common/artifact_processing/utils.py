@@ -4,8 +4,8 @@ Convenience methods and constants to facilitate a processing workflow involving 
 import os
 import shutil
 
-from bugswarm.common.rest_api.database_api import find_artifact
 from ..shell_wrapper import ShellWrapper
+from bugswarm.common.rest_api.database_api import DatabaseAPI
 
 REPOS_DIR = '/home/travis/build'
 _SANDBOX = 'bugswarm-sandbox'
@@ -25,33 +25,34 @@ def copy_to_host_sandbox(filepath: str):
     shutil.copy(filepath, HOST_SANDBOX)
 
 
-def get_repo(image_tag: str):
+def get_repo(image_tag: str, token: str):
     """
     Get the repository slug for the artifact represented by `image_tag`.
     """
     if not image_tag:
         raise ValueError
-    resp = find_artifact(image_tag)
+    bugswarmapi = DatabaseAPI(token=token)
+    resp = bugswarmapi.find_artifact(image_tag)
     resp.raise_for_status()
     return resp.json()['repo']
 
 
-def get_failed_repo_dir(image_tag: str):
+def get_failed_repo_dir(image_tag: str, token: str):
     """
     Get the path to the failed repository in the container.
     """
     if not image_tag:
         raise ValueError
-    return os.path.join(REPOS_DIR, 'failed', *get_repo(image_tag).split('/'))
+    return os.path.join(REPOS_DIR, 'failed', *get_repo(image_tag, token).split('/'))
 
 
-def get_passed_repo_dir(image_tag: str):
+def get_passed_repo_dir(image_tag: str, token: str):
     """
     Get the path to the passed repository in the container.
     """
     if not image_tag:
         raise ValueError
-    return os.path.join(REPOS_DIR, 'passed', *get_repo(image_tag).split('/'))
+    return os.path.join(REPOS_DIR, 'passed', *get_repo(image_tag, token).split('/'))
 
 
 def run_artifact(image_tag: str, command: str):
