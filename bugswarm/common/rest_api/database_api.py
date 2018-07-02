@@ -399,7 +399,9 @@ class DatabaseAPI(object):
         results = []
         next_link = start_link
         while next_link:
-            next_json = self._get(next_link).json()
+            next_resp = self._get(next_link)
+            next_resp.raise_for_status()
+            next_json = next_resp.json()
             try:
                 results += next_json['_items']
             except KeyError:
