@@ -23,6 +23,8 @@ Endpoint = str
 class DatabaseAPI(object):
     """
     This class encapsulates programmatic access to the BugSwarm metadata database via the REST API.
+
+    The insertion methods in this class support bulk insertion. Just pass a list of entities instead of a single entity.
     """
     # The base URL must include 'www'. Otherwise, the redirect performed by the backend will cause the requests library
     # to strip authorization headers, which are needed for authentication.
@@ -155,10 +157,10 @@ class DatabaseAPI(object):
         """
         if not self.remove_mined_build_pairs_for_repo(repo):
             return False
-        for bp in new_build_pairs:
-            if not self.insert_mined_build_pair(bp):
-                log.error('While replacing mined build pairs, an insertion failed.')
-                return False
+        # Take advantage of bulk insertions.
+        if not self.insert_mined_build_pair(new_build_pairs):
+            log.error('While replacing mined build pairs, an insertion failed.')
+            return False
         return True
 
     ###################################
