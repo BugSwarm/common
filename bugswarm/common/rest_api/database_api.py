@@ -2,6 +2,7 @@ import json
 import pprint
 
 from typing import Dict
+from typing import Generator
 from typing import List
 from urllib.parse import urljoin
 
@@ -23,8 +24,6 @@ Endpoint = str
 class DatabaseAPI(object):
     """
     This class encapsulates programmatic access to the BugSwarm metadata database via the REST API.
-
-    The insertion methods in this class support bulk insertion. Just pass a list of entities instead of a single entity.
     """
     # The base URL must include 'www'. Otherwise, the redirect performed by the backend will cause the requests library
     # to strip authorization headers, which are needed for authentication.
@@ -118,6 +117,9 @@ class DatabaseAPI(object):
     def insert_mined_build_pair(self, mined_build_pair) -> Response:
         return self._insert(DatabaseAPI._mined_build_pairs_endpoint(), mined_build_pair, 'mined build pair')
 
+    def bulk_insert_mined_build_pairs(self, mined_build_pairs) -> bool:
+        return all(self._bulk_insert(DatabaseAPI._mined_build_pairs_endpoint(), mined_build_pairs, 'mined build pairs'))
+
     def find_mined_build_pair(self, object_id: str, error_if_not_found: bool = True) -> Response:
         log.debug('Trying to find mined build pairs for ObjectId {}.'.format(object_id))
         return self._get(DatabaseAPI._mined_build_pair_object_id_endpoint(object_id), error_if_not_found)
@@ -158,8 +160,8 @@ class DatabaseAPI(object):
         if not self.remove_mined_build_pairs_for_repo(repo):
             return False
         # Take advantage of bulk insertions.
-        if not self.insert_mined_build_pair(new_build_pairs):
-            log.error('While replacing mined build pairs, an insertion failed.')
+        if not self.bulk_insert_mined_build_pairs(new_build_pairs):
+            log.error('While replacing mined build pairs, a bulkinsertion failed.')
             return False
         return True
 
@@ -368,6 +370,32 @@ class DatabaseAPI(object):
             log.error(resp.content)
         return resp
 
+    def _bulk_insert(self,
+                     endpoint: Endpoint,
+                     entities: List,
+                     plural_entity_name: str = 'entities') -> Generator[Response]:
+        if not isinstance(entities, list):
+            raise TypeError('The {} to bulk insert must be provided as a list.'.format(plural_entity_name))
+        if not all(e for e in entities):
+            raise ValueError('All {} must be non-None.'.format(plural_entity_name))
+        if not isinstance(endpoint, Endpoint):
+            raise TypeError
+        if not endpoint:
+            raise ValueError
+        if not isinstance(plural_entity_name, str):
+            raise TypeError
+        if not plural_entity_name:
+            raise ValueError
+        log.debug('Trying to bulk insert {} {}.'.format(len(entities), plural_entity_name))
+        # Insert the entities in chunks to avoid a 413 Request Entity Too Large error.
+        for chunk in DatabaseAPI._chunks(entities, 100):
+            resp = self._post(endpoint, chunk)
+            if resp.status_code == 422:
+                log.error('The', plural_entity_name, 'were not inserted because they failed validation.')
+                log.error(pprint.pformat(chunk))
+                log.error(resp.content)
+            yield resp
+
     def _upsert(self, endpoint: Endpoint, entity, singular_entity_name: str = 'entity') -> Response:
         if entity is None:
             raise TypeError
@@ -450,6 +478,22 @@ class DatabaseAPI(object):
             return total
         except KeyError:
             return -1
+
+    @staticmethod
+    def _chunks(l: List, n: int) -> Generator[List]:
+        """
+        Yield successive n-sized chunks from l.
+
+        Adapted from https://stackoverflow.com/a/312464.
+        """
+        if not isinstance(l, list):
+            raise TypeError
+        if not isinstance(n, int):
+            raise TypeError
+        if n == 0:
+            raise ValueError('Chunk size must be greater than zero.')
+        for i in range(len(l), n):
+            yield l[i:i + n]
 
     @staticmethod
     def _endpoint(resource: str) -> Endpoint:
