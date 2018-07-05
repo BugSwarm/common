@@ -373,7 +373,7 @@ class DatabaseAPI(object):
     def _bulk_insert(self,
                      endpoint: Endpoint,
                      entities: List,
-                     plural_entity_name: str = 'entities') -> Generator[Response]:
+                     plural_entity_name: str = 'entities') -> Generator[Response, None, None]:
         if not isinstance(entities, list):
             raise TypeError('The {} to bulk insert must be provided as a list.'.format(plural_entity_name))
         if not all(e for e in entities):
@@ -480,7 +480,7 @@ class DatabaseAPI(object):
             return -1
 
     @staticmethod
-    def _chunks(l: List, n: int) -> Generator[List]:
+    def _chunks(l: List, n: int) -> Generator[List, None, None]:
         """
         Yield successive n-sized chunks from l.
 
