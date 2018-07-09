@@ -161,7 +161,7 @@ class DatabaseAPI(object):
             return False
         # Take advantage of bulk insertions.
         if not self.bulk_insert_mined_build_pairs(new_build_pairs):
-            log.error('While replacing mined build pairs, a bulkinsertion failed.')
+            log.error('While replacing mined build pairs, a bulk insertion failed.')
             return False
         return True
 
