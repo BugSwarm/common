@@ -482,9 +482,7 @@ class DatabaseAPI(object):
     @staticmethod
     def _chunks(l: List, n: int) -> Generator[List, None, None]:
         """
-        Yield successive n-sized chunks from l.
-
-        Adapted from https://stackoverflow.com/a/312464.
+        Yields successive `n`-sized chunks from `l`. `n` is clamped to the length of `l`.
         """
         if not isinstance(l, list):
             raise TypeError
@@ -492,7 +490,12 @@ class DatabaseAPI(object):
             raise TypeError
         if n == 0:
             raise ValueError('Chunk size must be greater than zero.')
-        for i in range(len(l), n):
+        if not l:
+            # Yield nothing if the list is empty.
+            return
+        # Even though clamping is implied when slicing, we explicitly clamp n to the length of the list.
+        n = min(n, len(l))
+        for i in range(0, len(l), n):
             yield l[i:i + n]
 
     @staticmethod
