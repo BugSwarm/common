@@ -81,11 +81,6 @@ class DatabaseAPI(object):
     def count_artifacts(self) -> int:
         return self._count(DatabaseAPI._artifacts_endpoint())
 
-    def upsert_artifact(self, artifact) -> Response:
-        image_tag = artifact.get('image_tag')
-        assert image_tag
-        return self._upsert(DatabaseAPI._artifact_image_tag_endpoint(image_tag), artifact, 'artifact')
-
     def set_artifact_metric(self, image_tag: str, metric_name: str, metric_value) -> Response:
         """
         Add a metric to an existing artifact.
@@ -299,7 +294,7 @@ class DatabaseAPI(object):
             log.error(resp.content)
         return resp
 
-    def _patch(self, endpoint: Endpoint, data) -> Response:
+    def _patch(self, endpoint: Endpoint, updates) -> Response:
         if not isinstance(endpoint, Endpoint):
             raise TypeError
         if not endpoint:
@@ -311,7 +306,7 @@ class DatabaseAPI(object):
             'Content-Type': 'application/json',
             'If-Match': etag,
         }
-        resp = requests.patch(endpoint, json.dumps(data), headers=headers, auth=self.auth)
+        resp = requests.patch(endpoint, json.dumps(updates), headers=headers, auth=self.auth)
         if not resp.ok:
             log.error(resp.url)
             log.error(resp.content)
