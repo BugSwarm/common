@@ -105,6 +105,36 @@ class DatabaseAPI(object):
         updates = {'metrics.{}'.format(metric_name): metric_value}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
+    def set_artifact_failed_config(self, image_tag: str, config) -> Response:
+        """
+        Add the configuration of the job to an existing artifact's passed job metadata.
+
+        :param image_tag: The image tag identifying the artifact to update.
+        :param config: The configuration of the job.
+        :return: The response object.
+        """
+        if not isinstance(image_tag, str):
+            raise TypeError
+        if not image_tag:
+            raise ValueError
+        updates = {'failed_job.config': config}
+        return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
+
+    def set_artifact_passed_config(self, image_tag: str, config) -> Response:
+        """
+        Add the configuration of the job to an existing artifact's passed job metadata.
+
+        :param image_tag: The image tag identifying the artifact to update.
+        :param config: The configuration of the job.
+        :return: The response object.
+        """
+        if not isinstance(image_tag, str):
+            raise TypeError
+        if not image_tag:
+            raise ValueError
+        updates = {'passed_job.config': config}
+        return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
+
     ###################################
     # Mined Build Pair REST methods
     ###################################
