@@ -107,7 +107,7 @@ class DatabaseAPI(object):
 
     def set_artifact_failed_config(self, image_tag: str, config) -> Response:
         """
-        Add the configuration of the job to an existing artifact's passed job metadata.
+        Add the configuration of the job to an existing artifact's failed job metadata.
 
         :param image_tag: The image tag identifying the artifact to update.
         :param config: The configuration of the job.
