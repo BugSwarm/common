@@ -64,7 +64,7 @@ class DatabaseAPI(object):
         return cls._BASE_URL
 
     @classproperty
-    def base_url(cls) -> Endpoint:
+    def hostname(cls) -> Endpoint:
         """
         Exposes the hostname of the API as a read-only class property.
         """
