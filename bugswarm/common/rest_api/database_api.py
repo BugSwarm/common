@@ -28,7 +28,9 @@ class DatabaseAPI(object):
     # The base URL must include 'www'. Otherwise, the redirect performed by the backend will cause the requests library
     # to strip authorization headers, which are needed for authentication.
     # See https://github.com/requests/requests/issues/2949 for more information.
-    _BASE_URL = 'http://www.api.bugswarm.org/v1'
+    _HOSTNAME = 'www.api.bugswarm.org'
+    _API_VERSION = 'v1'
+    _BASE_URL = 'http://{}/{}'.format(_HOSTNAME, _API_VERSION)
     _ARTIFACTS_RESOURCE = 'artifacts'
     _MINED_BUILD_PAIRS_RESOURCE = 'minedBuildPairs'
     _MINED_PROJECTS_RESOURCE = 'minedProjects'
@@ -60,6 +62,13 @@ class DatabaseAPI(object):
         Exposes the base URL of the API as a read-only class property.
         """
         return cls._BASE_URL
+
+    @classproperty
+    def base_url(cls) -> Endpoint:
+        """
+        Exposes the hostname of the API as a read-only class property.
+        """
+        return cls._HOSTNAME
 
     ###################################
     # Artifact REST methods
