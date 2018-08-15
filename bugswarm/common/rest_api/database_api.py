@@ -36,6 +36,7 @@ class DatabaseAPI(object):
     _MINED_PROJECTS_RESOURCE = 'minedProjects'
     _EMAIL_SUBSCRIBERS_RESOURCE = 'emailSubscribers'
     _ACCOUNTS_RESOURCE = 'accounts'
+    _PATCHES_RESOURCE = 'patches'
 
     def __init__(self, token: str):
         """
@@ -335,6 +336,26 @@ class DatabaseAPI(object):
         return self._count(DatabaseAPI._accounts_endpoint())
 
     ###################################
+    # Patches REST methods
+    ###################################
+
+    def insert_patch(self, patch) -> Response:
+        return self._insert(DatabaseAPI._patches_endpoint(), patch, 'patch')
+
+    def find_patch(self, object_id: str, error_if_not_found: bool = True) -> Response:
+        log.debug('Trying to find patch for ObjectId {}.'.format(object_id))
+        return self._get(DatabaseAPI._patches_endpoint(object_id), error_if_not_found)
+
+    def list_patches(self) -> List:
+        return self._list(DatabaseAPI._patches_endpoint())
+
+    def filter_patches(self, api_filter: str) -> List:
+        return self._filter(DatabaseAPI._patches_endpoint(), api_filter)
+
+    def count_patches(self) -> int:
+        return self._count(DatabaseAPI._patches_endpoint())
+
+    ###################################
     # Convenience REST methods
     ###################################
 
@@ -631,3 +652,15 @@ class DatabaseAPI(object):
         if not email:
             raise ValueError
         return '/'.join([DatabaseAPI._accounts_endpoint(), email])
+
+    @staticmethod
+    def _patches_endpoint() -> Endpoint:
+        return DatabaseAPI._endpoint(DatabaseAPI._PATCHES_RESOURCE)
+
+    @staticmethod
+    def _patches_object_id_endpoint(object_id: str) -> Endpoint:
+        if not isinstance(object_id, str):
+            raise TypeError
+        if not object_id:
+            raise ValueError
+        return '/'.join([DatabaseAPI._patches_endpoint(), object_id])
