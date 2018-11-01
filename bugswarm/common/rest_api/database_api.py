@@ -157,7 +157,17 @@ class DatabaseAPI(object):
             raise TypeError
         if not image_tag:
             raise ValueError
-        updates = {'failed_job.patches.{}'.format(patch_name): patch}
+
+        artifact = self.find_artifact(image_tag).json()
+        patches_list = []
+
+        try:
+            patches_list = artifact['failed_job']['patches']
+            patches_list.append(patch_name)
+        except KeyError:
+            patches_list = [patch_name]
+
+        updates = {'failed_job.patches': patches_list}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
     def set_artifact_passed_patch(self, image_tag: str, patch_name: str, patch) -> Response:
@@ -173,7 +183,17 @@ class DatabaseAPI(object):
             raise TypeError
         if not image_tag:
             raise ValueError
-        updates = {'passed_job.patches.{}'.format(patch_name): patch}
+
+        artifact = self.find_artifact(image_tag).json()
+        patches_list = []
+
+        try:
+            patches_list = artifact['failed_job']['patches']
+            patches_list.append(patch_name)
+        except KeyError:
+            patches_list = [patch_name]
+
+        updates = {'failed_job.patches': patches_list}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
     ###################################
