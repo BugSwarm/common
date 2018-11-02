@@ -144,6 +144,44 @@ class DatabaseAPI(object):
         updates = {'passed_job.config': config}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
+    def set_artifact_classification_exceptions(self, image_tag: str, exceptions) -> Response:
+        """
+        Add the code exceptions to an existing artifact's classification metadata.
+
+        :param image_tag: The image tag identifying the artifact to update.
+        :param exceptions: The standard code exceptions for the artifact.
+        :return: The response object.
+        """
+        if not isinstance(image_tag, str):
+            raise TypeError
+        if not image_tag:
+            raise ValueError
+        updates = {'classification.exceptions': exceptions}
+        return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
+
+    def set_artifact_classification_category(self, image_tag: str, category_type: str, category_confidence) -> Response:
+        """
+        Add a classification to an existing artifact.
+
+        If the metric with name `category_type` already exists, then its value will be overridden with `category_confidence`.
+        Otherwise, the metric will be created with value `category_confidence`.
+
+        :param image_tag: The image tag identifying the artifact to update.
+        :param category_type: The name of the category type to update.
+        :param category_confidence: The new confidence value of the category.
+        :return: The response object.
+        """
+        if not isinstance(image_tag, str):
+            raise TypeError
+        if not image_tag:
+            raise ValueError
+        if not isinstance(category_type, str):
+            raise TypeError
+        if not category_type:
+            raise ValueError
+        updates = {'classification.{}'.format(category_type): category_confidence}
+        return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
+
     def set_artifact_failed_patch(self, image_tag: str, patch_name: str, patch) -> Response:
         """
         Add the patch for the artifact to an existing artifact's failed job metadata.
