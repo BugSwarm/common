@@ -1,5 +1,6 @@
 import json
 import pprint
+from datetime import date
 
 from typing import Dict
 from typing import Generator
@@ -182,7 +183,7 @@ class DatabaseAPI(object):
         updates = {'classification.{}'.format(category_type): category_confidence}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
-    def set_artifact_failed_patch(self, image_tag: str, patch_name: str, patch) -> Response:
+    def set_artifact_failed_patch(self, image_tag: str, patch_name: str) -> Response:
         """
         Add the patch for the artifact to an existing artifact's failed job metadata.
 
@@ -195,10 +196,11 @@ class DatabaseAPI(object):
             raise TypeError
         if not image_tag:
             raise ValueError
-        updates = {'failed_job.patches.{}'.format(patch_name): patch}
+        today = str(date.today())
+        updates = {'failed_job.patches.{}'.format(patch_name): today}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
-    def set_artifact_passed_patch(self, image_tag: str, patch_name: str, patch) -> Response:
+    def set_artifact_passed_patch(self, image_tag: str, patch_name: str) -> Response:
         """
         Add the patch for the artifact to an existing artifact's passed job metadata.
 
@@ -211,7 +213,8 @@ class DatabaseAPI(object):
             raise TypeError
         if not image_tag:
             raise ValueError
-        updates = {'passed_job.patches.{}'.format(patch_name): patch}
+        today = str(date.today())
+        updates = {'passed_job.patches.{}'.format(patch_name): today}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
     ###################################
