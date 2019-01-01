@@ -217,6 +217,21 @@ class DatabaseAPI(object):
         updates = {'passed_job.patches.{}'.format(patch_name): today}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
+    def set_artifact_creation_time(self, image_tag: str, time: int) -> Response:
+        """
+        Add the time of creation for the artifact to an existing artifact's passed job metadata.
+        The time is retrieved from the _created field.
+        :param image_tag: The image tag identifying the artifact to update.
+        :param time: Time of the _created field
+        :return: The response object.
+        """
+        if not isinstance(image_tag, str):
+            raise TypeError
+        if not image_tag:
+            raise ValueError
+        updates = {'creation_time': time}
+        return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
+
     ###################################
     # Mined Build Pair REST methods
     ###################################
