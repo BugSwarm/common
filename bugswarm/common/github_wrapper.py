@@ -1,4 +1,5 @@
 import time
+from collections import deque
 
 from typing import List
 from typing import Optional
@@ -28,11 +29,10 @@ class GitHubWrapper(object):
         if not all(isinstance(t, str) for t in tokens):
             raise ValueError('All GitHub tokens must be given as strings.')
 
-        self._tokens = tokens
+        self._tokens = deque(tokens)
         self._session = cachecontrol.CacheControl(requests.Session())
-        # Start with the last token. We lazily switch tokens as each hits its quota limit.
-        # Whenever the token hits its limit, we move the token to the end of the list
-        self._session.headers['Authorization'] = 'token %s' % self._tokens[-1]
+        # Start with the first token. We lazily switch tokens as each hits its quota limit.
+        self._session.headers['Authorization'] = 'token %s' % self._tokens[0]
 
     def get(self, url: str):
         """
@@ -157,13 +157,16 @@ class GitHubWrapper(object):
             if not has_wait:
                 chosen_token = t
                 min_wait_time = 0
-                # if a token is chosen, move it to the end of the token list
+                # if a token is chosen, move it to the end
                 self._tokens.append(t)
                 del self._tokens[self._tokens.index(t)]
                 break
             if wait_time < min_wait_time:
                 min_wait_time = wait_time
                 chosen_token = t
+                # if a token is chosen, move it to the end
+                self._tokens.append(t)
+                del self._tokens[self._tokens.index(t)]
         if not chosen_token:
             raise RuntimeError('Unexpected state: No GitHub token chosen in github.py.')
         log.debug('Chose token {}.'.format(chosen_token))
