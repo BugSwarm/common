@@ -30,8 +30,9 @@ class GitHubWrapper(object):
 
         self._tokens = tokens
         self._session = cachecontrol.CacheControl(requests.Session())
-        # Start with the first token. We lazily switch tokens as each hits its quota limit.
-        self._session.headers['Authorization'] = 'token %s' % self._tokens[0]
+        # Start with the last token. We lazily switch tokens as each hits its quota limit.
+        # Whenever the token hits its limit, we move the token to the end of the list
+        self._session.headers['Authorization'] = 'token %s' % self._tokens[-1]
 
     def get(self, url: str):
         """
@@ -156,6 +157,9 @@ class GitHubWrapper(object):
             if not has_wait:
                 chosen_token = t
                 min_wait_time = 0
+                # if a token is chosen, move it to the end of the token list
+                self._tokens.append(t)
+                del self._tokens[self._tokens.index(t)]
                 break
             if wait_time < min_wait_time:
                 min_wait_time = wait_time
