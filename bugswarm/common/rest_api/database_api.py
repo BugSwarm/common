@@ -220,7 +220,7 @@ class DatabaseAPI(object):
     ###################################
     # Mined Build Pair REST methods
     ###################################
-    def patch_build_system(self, obj_id: str, job_pairs) -> Response:
+    def patch_job_pairs(self, obj_id: str, job_pairs) -> Response:
         updates = {'jobpairs': job_pairs}
         return self._patch(DatabaseAPI._mined_build_pair_object_id_endpoint(obj_id), updates)
 
