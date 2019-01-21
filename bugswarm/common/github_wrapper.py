@@ -160,7 +160,7 @@ class GitHubWrapper(object):
                 chosen_token = t
                 min_wait_time = 0
                 # if a token is chosen, move it to the end
-                updated_toekn.append(t)
+                updated_token.append(t)
                 del updated_token[updated_token.index(t)]
                 break
             if wait_time < min_wait_time:
