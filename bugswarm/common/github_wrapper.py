@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 import cachecontrol
 import requests
+import copy
 
 from . import log
 
@@ -150,6 +151,7 @@ class GitHubWrapper(object):
         """
         min_wait_time = 9999
         chosen_token = None
+        updated_token = copy.deepcopy(self._tokens)
         for t in self._tokens:
             self._session = cachecontrol.CacheControl(requests.Session())
             self._session.headers['Authorization'] = 'token %s' % t
@@ -158,15 +160,16 @@ class GitHubWrapper(object):
                 chosen_token = t
                 min_wait_time = 0
                 # if a token is chosen, move it to the end
-                self._tokens.append(t)
-                del self._tokens[self._tokens.index(t)]
+                updated_token.append(t)
+                del updated_token[updated_token.index(t)]
                 break
             if wait_time < min_wait_time:
                 min_wait_time = wait_time
                 chosen_token = t
                 # if a token is chosen, move it to the end
-                self._tokens.append(t)
-                del self._tokens[self._tokens.index(t)]
+                updated_token.append(t)
+                del updated_token[updated_token.index(t)]
+        self._tokens = updated_token
         if not chosen_token:
             raise RuntimeError('Unexpected state: No GitHub token chosen in github.py.')
         log.debug('Chose token {}.'.format(chosen_token))
