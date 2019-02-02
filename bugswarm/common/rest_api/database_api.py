@@ -217,6 +217,36 @@ class DatabaseAPI(object):
         updates = {'passed_job.patches.{}'.format(patch_name): today}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
+    def set_artifact_reproduce_successes(self, image_tag: str, successes: int) -> Response:
+        """
+        Update the reproduce_successes of the job to an existing artifact's failed job metadata.
+
+        :param image_tag: The image tag identifying the artifact to update.
+        :param successes: The number of reproduce_successes of the job.
+        :return: The response object.
+        """
+        if not isinstance(image_tag, str):
+            raise TypeError
+        if not image_tag:
+            raise ValueError
+        updates = {'reproduce_successes': int(successes)}
+        return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
+
+    def set_artifact_stability(self, image_tag: str, stability) -> Response:
+        """
+        Update the stability of the job to an existing artifact's failed job metadata.
+
+        :param image_tag: The image tag identifying the artifact to update.
+        :param stability: The reproduce_successes the job.
+        :return: The response object.
+        """
+        if not isinstance(image_tag, str):
+            raise TypeError
+        if not image_tag:
+            raise ValueError
+        updates = {'stability': stability}
+        return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
+
     ###################################
     # Mined Build Pair REST methods
     ###################################
