@@ -20,7 +20,7 @@ setup(
         'bugswarm',
     ],
     install_requires=[
-        'requests==2.18.4',
+        'requests>=2.20.0',
         'CacheControl==0.12.3',
         'requests-cache==0.4.13',
     ],
