@@ -83,7 +83,6 @@ class DatabaseAPI(object):
         return self._get(DatabaseAPI._artifact_image_tag_endpoint(image_tag), error_if_not_found)
 
     def list_artifacts(self) -> List:
-        # return self._list(DatabaseAPI._artifacts_endpoint())
         api_filter = '{"reproduce_successes":{"$gt":0},"lang":{"$in":["Java","Python"]}}'
         return self.filter_artifacts(api_filter)
 
