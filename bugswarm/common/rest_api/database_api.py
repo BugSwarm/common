@@ -84,6 +84,7 @@ class DatabaseAPI(object):
         :param image_tag: The image tag identifying the artifact to find.
         :param error_if_not_found: return err if the image tag not found. default True.
         :return: The response object.
+        e.g. find_artifact("Abjad-abjad-289716771")
         """ 
         log.debug('Trying to find artifact with image_tag {}.'.format(image_tag))
         return self._get(DatabaseAPI._artifact_image_tag_endpoint(image_tag), error_if_not_found)
