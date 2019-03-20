@@ -79,13 +79,29 @@ class DatabaseAPI(object):
         return self._insert(DatabaseAPI._artifacts_endpoint(), artifact, 'artifact')
 
     def find_artifact(self, image_tag: str, error_if_not_found: bool = True) -> Response:
+        """
+        Get artifact data based on image_tag.
+        :param image_tag: The image tag identifying the artifact to find.
+        :param error_if_not_found: return err if the image tag not found. default True.
+        :return: The response object.
+        e.g. find_artifact("Abjad-abjad-289716771")
+        """ 
         log.debug('Trying to find artifact with image_tag {}.'.format(image_tag))
         return self._get(DatabaseAPI._artifact_image_tag_endpoint(image_tag), error_if_not_found)
 
     def list_artifacts(self) -> List:
-        return self._list(DatabaseAPI._artifacts_endpoint())
+        """
+        Return a List of java and python artifacts that has at least one reproduce_successes.
+        """ 
+        api_filter = '{"reproduce_successes":{"$gt":0},"lang":{"$in":["Java","Python"]}}'
+        return self.filter_artifacts(api_filter)
 
     def filter_artifacts(self, api_filter: str) -> List:
+        """
+        Return a list of artifacts based on custom filter.
+        :param api_filter: a string filter.
+        e.g.: api_filter = '{"reproduce_successes":{"$gt":0},"lang":{"$in":["Java","Python"]}}'
+        """
         return self._filter(DatabaseAPI._artifacts_endpoint(), api_filter)
 
     def count_artifacts(self) -> int:
