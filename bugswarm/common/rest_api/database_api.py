@@ -263,6 +263,22 @@ class DatabaseAPI(object):
         updates = {'stability': stability}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
+    def set_artifact_current_status(self, image_tag: str, status: str, date: str) -> Response:
+        """
+        Update the current status of an artifact.
+
+        :param image_tag: The image tag identifying the artifact to update.
+        :param status: Reproducible/Broken/Flaky.
+        :param date: the date of artifacts status changed
+        :return: The response object.
+        """
+        if not isinstance(image_tag, str):
+            raise TypeError
+        if not image_tag:
+            raise ValueError
+        updates = {'current_status': {'status': status, 'time_stamp': date}}
+        return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
+
     ###################################
     # Mined Build Pair REST methods
     ###################################
