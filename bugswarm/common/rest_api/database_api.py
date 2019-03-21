@@ -268,7 +268,7 @@ class DatabaseAPI(object):
         Update the current status of an artifact.
 
         :param image_tag: The image tag identifying the artifact to update.
-        :param status: Reproducible/Broken/Flaky.
+        :param status: Unreproducible/Reproducible/Broken/Flaky.
         :param date: the date of artifacts status changed
         :return: The response object.
         """
