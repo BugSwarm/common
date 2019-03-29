@@ -269,7 +269,7 @@ class DatabaseAPI(object):
 
         :param image_tag: The image tag identifying the artifact to update.
         :param status: Unreproducible/Reproducible/Broken/Flaky.
-        :param date: the date of artifacts status changed
+        :param date: the date (YYYY-MM-DD) of artifacts status changed
         :return: The response object.
         """
         if not isinstance(image_tag, str):
