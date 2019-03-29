@@ -1,3 +1,4 @@
+import datetime
 import json
 import pprint
 from datetime import date
@@ -276,6 +277,12 @@ class DatabaseAPI(object):
             raise TypeError
         if not image_tag:
             raise ValueError
+        if status not in ['Unreproducible', 'Reproducible', 'Broken', 'Flaky']:
+            raise ValueError("Incorrect status, should be Unreproducible/Reproducible/Broken/Flaky")
+        try:
+            datetime.datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            raise ValueError("Incorrect data format, should be YYYY-MM-DD")
         updates = {'current_status': {'status': status, 'time_stamp': date}}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
