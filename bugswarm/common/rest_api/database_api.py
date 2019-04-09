@@ -79,6 +79,11 @@ class DatabaseAPI(object):
     def insert_artifact(self, artifact) -> Response:
         return self._insert(DatabaseAPI._artifacts_endpoint(), artifact, 'artifact')
 
+    def patch_artifact(self, image_tag, updates) -> Response:
+        if not image_tag:
+            raise ValueError
+        return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
+
     def find_artifact(self, image_tag: str, error_if_not_found: bool = True) -> Response:
         """
         Get artifact data based on image_tag.
