@@ -70,6 +70,7 @@ def download_logs(job_ids: List[Union[str, int]],
                          downloaded for the job ID at index `i` in `job_ids`. Thus, `job_ids` and `destinations` must be
                          the same length.
     :param overwrite: Same as the argument for `download_log`.
+    :param num_workers: Number of workers to download logs, default to be 5.
     :param retries: Same as the argument for `download_log`.
     :raises ValueError:
     :raises FileExistsError: When a file already exists at the given destination and `overwrite` is False.
