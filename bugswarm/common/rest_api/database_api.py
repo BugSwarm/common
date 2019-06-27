@@ -612,6 +612,8 @@ class DatabaseAPI(object):
             next_resp.raise_for_status()
             next_json = next_resp.json()
             try:
+                if not next_json['_items']:
+                    break
                 results += next_json['_items']
             except KeyError:
                 break
