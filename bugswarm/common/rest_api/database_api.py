@@ -1,3 +1,4 @@
+import datetime
 import json
 import pprint
 from datetime import date
@@ -262,6 +263,28 @@ class DatabaseAPI(object):
         if not image_tag:
             raise ValueError
         updates = {'stability': stability}
+        return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
+
+    def set_artifact_current_status(self, image_tag: str, status: str, date: str) -> Response:
+        """
+        Update the current status of an artifact.
+
+        :param image_tag: The image tag identifying the artifact to update.
+        :param status: Unreproducible/Reproducible/Broken/Flaky.
+        :param date: the date (YYYY-MM-DD) of artifacts status changed
+        :return: The response object.
+        """
+        if not isinstance(image_tag, str):
+            raise TypeError
+        if not image_tag:
+            raise ValueError
+        if status not in ['Unreproducible', 'Reproducible', 'Broken', 'Flaky']:
+            raise ValueError("Incorrect status, should be Unreproducible/Reproducible/Broken/Flaky")
+        try:
+            datetime.datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            raise ValueError("Incorrect data format, should be YYYY-MM-DD")
+        updates = {'current_status': {'status': status, 'time_stamp': date}}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
     ###################################
@@ -608,6 +631,8 @@ class DatabaseAPI(object):
             next_resp.raise_for_status()
             next_json = next_resp.json()
             try:
+                if not next_json['_items']:
+                    break
                 results += next_json['_items']
             except KeyError:
                 break

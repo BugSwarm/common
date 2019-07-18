@@ -57,6 +57,7 @@ def download_log(job_id: Union[str, int],
 def download_logs(job_ids: List[Union[str, int]],
                   destinations: List[str],
                   overwrite: bool = True,
+                  num_workers: int = 5,
                   retries: int = _DEFAULT_RETRIES) -> bool:
     """
     Downloads one or more Travis job logs in parallel and stores them at the given destinations.
@@ -69,6 +70,7 @@ def download_logs(job_ids: List[Union[str, int]],
                          downloaded for the job ID at index `i` in `job_ids`. Thus, `job_ids` and `destinations` must be
                          the same length.
     :param overwrite: Same as the argument for `download_log`.
+    :param num_workers: Number of workers to download logs. Defaults to the maximum of 5.
     :param retries: Same as the argument for `download_log`.
     :raises ValueError:
     :raises FileExistsError: When a file already exists at the given destination and `overwrite` is False.
@@ -82,7 +84,7 @@ def download_logs(job_ids: List[Union[str, int]],
         log.error('The job_ids and destinations arguments must be of equal length.')
         raise ValueError
 
-    num_workers = len(job_ids)
+    num_workers = min(num_workers, len(job_ids))
     with ThreadPoolExecutor(max_workers=num_workers) as executor:
         future_to_job_id = {executor.submit(download_log, job_id, dst, overwrite, retries): job_id
                             for job_id, dst in zip(job_ids, destinations)}
