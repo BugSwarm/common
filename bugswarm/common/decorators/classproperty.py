@@ -4,11 +4,13 @@ Defines decorators that enable class properties.
 These decorators are adapted from answers to the Stack Overflow question at https://stackoverflow.com/q/3203286.
 """
 
+
 class classproperty:
     """
     Same as property(), but passes obj.__class__ instead of obj to fget/fset/fdel.
     Original code for property emulation at https://docs.python.org/3.5/howto/descriptor.html#properties.
     """
+
     def __init__(self, fget=None, fset=None, fdel=None, doc=None):
         self.fget = fget
         self.fset = fset

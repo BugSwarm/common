@@ -1,21 +1,23 @@
+import os
 import datetime
 import json
 import pprint
-from datetime import date
+import sys
+import secrets
+import requests
+import requests.auth
 
+from datetime import date
 from typing import Dict
 from typing import Generator
 from typing import List
 from urllib.parse import urljoin
-
-import requests
-import requests.auth
-
 from requests import Response
 
-from bugswarm.common.decorators.classproperty import classproperty
-from bugswarm.common.decorators.classproperty import classproperty_support
-from bugswarm.common import log
+from ..decorators.classproperty import classproperty
+from ..decorators.classproperty import classproperty_support
+from .. import log
+from bugswarm.common.credentials import COMMON_HOSTNAME
 
 __all__ = ['Endpoint', 'DatabaseAPI']
 
@@ -30,7 +32,11 @@ class DatabaseAPI(object):
     # The base URL must include 'www'. Otherwise, the redirect performed by the backend will cause the requests library
     # to strip authorization headers, which are needed for authentication.
     # See https://github.com/requests/requests/issues/2949 for more information.
-    _HOSTNAME = 'www.api.bugswarm.org'
+    _HOSTNAME = COMMON_HOSTNAME
+    if not _HOSTNAME:
+        print('[ERROR]: COMMON_HOSTNAME has not been found. Please set the environmental variable and reinstall '
+              'common package')
+        sys.exit(1)
     _API_VERSION = 'v1'
     _BASE_URL = 'http://{}/{}'.format(_HOSTNAME, _API_VERSION)
     _ARTIFACTS_RESOURCE = 'artifacts'
@@ -38,6 +44,7 @@ class DatabaseAPI(object):
     _MINED_PROJECTS_RESOURCE = 'minedProjects'
     _EMAIL_SUBSCRIBERS_RESOURCE = 'emailSubscribers'
     _ACCOUNTS_RESOURCE = 'accounts'
+    _LOGS_RESOURCE = 'logs'
 
     def __init__(self, token: str):
         """
@@ -91,15 +98,15 @@ class DatabaseAPI(object):
         :param error_if_not_found: return err if the image tag not found. default True.
         :return: The response object.
         e.g. find_artifact("Abjad-abjad-289716771")
-        """ 
+        """
         log.debug('Trying to find artifact with image_tag {}.'.format(image_tag))
         return self._get(DatabaseAPI._artifact_image_tag_endpoint(image_tag), error_if_not_found)
 
     def list_artifacts(self) -> List:
         """
-        Return a List of java and python artifacts that has at least one reproduce_successes.
-        """ 
-        api_filter = '{"reproduce_successes":{"$gt":0},"lang":{"$in":["Java","Python"]}}'
+        Return a List of artifacts that has at least one reproduce_successes.
+        """
+        api_filter = '{"reproduce_successes":{"$gt":0}}'
         return self.filter_artifacts(api_filter)
 
     def filter_artifacts(self, api_filter: str) -> List:
@@ -186,8 +193,8 @@ class DatabaseAPI(object):
         """
         Add a classification to an existing artifact.
 
-        If the metric with name `category_type` already exists, then its value will be overridden with `category_confidence`.
-        Otherwise, the metric will be created with value `category_confidence`.
+        If the metric with name `category_type` already exists, then its value will be overridden with
+        `category_confidence`. Otherwise, the metric will be created with value `category_confidence`.
 
         :param image_tag: The image tag identifying the artifact to update.
         :param category_type: The name of the category type to update.
@@ -291,6 +298,62 @@ class DatabaseAPI(object):
         updates = {'current_status': {'status': status, 'time_stamp': date}}
         return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
 
+    def update_artifact_repo_name(self, image_tag: str, new_repo: str) -> Response:
+        """
+        Update the repository name of an artifact.
+        :param image_tag: The image tag identifying the artifact to update.
+        :param new_repo: The updated repo name we are setting.
+        :return: The response object.
+        """
+        if not isinstance(image_tag, str):
+            raise TypeError
+        if not isinstance(new_repo, str):
+            raise TypeError
+        updates = {'repo': new_repo}
+        return self._patch(DatabaseAPI._artifact_image_tag_endpoint(image_tag), updates)
+
+    ###################################
+    # Logs REST methods
+    ###################################
+    def set_build_log(self, job_id: str, build_log_fp: str) -> Response:
+        """
+        Add the failed or passed build log for the artifact to the logs collection.
+        :param job_id: The job id corresponding to the passed or failed build log.
+        :param build_log_fp: The path for the build log to be loaded into the database.
+        :return: The response object.
+        """
+        if not isinstance(job_id, str):
+            raise TypeError
+        if not job_id:
+            raise ValueError
+        if not isinstance(build_log_fp, str):
+            raise TypeError
+        if not build_log_fp:
+            raise ValueError
+        if not os.path.exists(build_log_fp):
+            raise IOError
+        with open(build_log_fp, 'r') as build_log:
+            build_log_text = build_log.read()
+        log_entry = {
+            'job_id': job_id,
+            'build_log': build_log_text,
+        }
+        return self._insert(DatabaseAPI._logs_endpoint(), log_entry, 'log')
+
+    def get_build_log(self, job_id: str, error_if_not_found: bool = True) -> Response:
+        """
+        Get artifact failed or passed build log based on job id.
+        :param job_id: The job id corresponding to the passed or failed build log.
+        :param error_if_not_found: return err if the image tag not found. default True.
+        :return: The build_log.
+        """
+        if not isinstance(job_id, str):
+            raise TypeError
+        if not job_id:
+            raise ValueError
+        log_object = self._get(DatabaseAPI._logs_job_id_endpoint(job_id), error_if_not_found).json()
+        return log_object['build_log']
+
     ###################################
     # Mined Build Pair REST methods
     ###################################
@@ -349,6 +412,18 @@ class DatabaseAPI(object):
             return False
         return True
 
+    def update_mined_build_pairs_repo_name(self, obj_id: str, new_repo: str) -> Response:
+        """
+        Update the repository name of an artifact in the minedBuildPairs db.
+        :param obj_id: The unique id of an object.
+        :param new_repo: The updated repo name we are setting.
+        :return: The response object.
+        """
+        if not isinstance(new_repo, str):
+            raise TypeError
+        updates = {'repo': new_repo}
+        return self._patch(DatabaseAPI._mined_build_pair_object_id_endpoint(obj_id), updates)
+
     ###################################
     # Mined Project REST methods
     ###################################
@@ -356,9 +431,9 @@ class DatabaseAPI(object):
     def insert_mined_project(self, mined_project) -> Response:
         return self._insert(DatabaseAPI._mined_projects_endpoint(), mined_project, 'mined project')
 
-    def find_mined_project(self, repo: str, error_if_not_found: bool = True) -> Response:
-        log.debug('Trying to find mined project with repo {}.'.format(repo))
-        return self._get(DatabaseAPI._mined_project_repo_endpoint(repo), error_if_not_found)
+    def find_mined_project(self, repo: str, ci_service: str, error_if_not_found: bool = True) -> Response:
+        log.debug('Trying to find mined project with repo {} and CI service {}.'.format(repo, ci_service))
+        return self._get(DatabaseAPI._mined_project_repo_endpoint(repo, ci_service), error_if_not_found)
 
     def list_mined_projects(self) -> List:
         return self._list(DatabaseAPI._mined_projects_endpoint())
@@ -366,6 +441,7 @@ class DatabaseAPI(object):
     def filter_mined_projects(self, api_filter: str) -> List:
         return self._filter(DatabaseAPI._mined_projects_endpoint(), api_filter)
 
+    # TODO should this count repos, or repo-CI pairs?
     def count_mined_projects(self) -> int:
         return self._count(DatabaseAPI._mined_projects_endpoint())
 
@@ -374,10 +450,41 @@ class DatabaseAPI(object):
         Upsert a mined project. Can be used for initial mining or re-mining of a project.
         """
         repo = mined_project.get('repo')
+        ci_service = mined_project.get('ci_service')
         assert repo
-        return self._upsert(DatabaseAPI._mined_project_repo_endpoint(repo), mined_project, 'mined project')
+        assert ci_service
+        return self._upsert(DatabaseAPI._mined_project_repo_endpoint(repo, ci_service), mined_project, 'mined project')
 
-    def set_mined_project_progression_metric(self, repo: str, metric_name: str, metric_value) -> Response:
+    def set_latest_build_info_metric(self, repo: str, ci_service: str, build_number: int, build_id: int):
+        """
+        Set the build information regarding the build number and build id of the latest build we've mined.
+
+        :param repo: The repository slug for identifying the mined project to update.
+        :param ci_service: The CI service for identifying the project to update.
+        :param build_number: The latest build number associated to the last build we've mined
+        :param build_id: The latest build id associated to the last build we've mined
+        :return: The response object.
+        """
+        if not isinstance(repo, str):
+            raise TypeError
+        if not repo:
+            raise ValueError
+        if not isinstance(build_number, int):
+            raise TypeError
+        if not build_number:
+            raise ValueError
+        if not isinstance(build_id, int):
+            raise TypeError
+        if not build_id:
+            raise ValueError
+        updates = {
+            'last_build_mined.build_number': build_number,
+            'last_build_mined.build_id': build_id
+        }
+        return self._patch(DatabaseAPI._mined_project_repo_endpoint(repo, ci_service), updates)
+
+    def set_mined_project_progression_metric(self, repo: str, ci_service: str,
+                                             metric_name: str, metric_value) -> Response:
         """
         Add a mining progression metric to an existing mined project.
         The value of the metric can be any valid database type.
@@ -399,7 +506,22 @@ class DatabaseAPI(object):
         if not metric_name:
             raise ValueError
         updates = {'progression_metrics.{}'.format(metric_name): metric_value}
-        return self._patch(DatabaseAPI._mined_project_repo_endpoint(repo), updates)
+        return self._patch(DatabaseAPI._mined_project_repo_endpoint(repo, ci_service), updates)
+
+    def update_mined_project_repo_name(self, repo: str, ci_service: str, new_repo: str):
+        if not isinstance(repo, str):
+            raise TypeError
+        if not isinstance(repo, str):
+            raise TypeError
+        updates = {'repo': new_repo}
+        return self._patch(DatabaseAPI._mined_project_repo_endpoint(repo, ci_service), updates)
+
+    def soft_delete_mined_project(self, repo: str, ci_service: str) -> Response:
+        if not isinstance(repo, str):
+            raise TypeError
+        if not repo:
+            raise ValueError
+        return self._delete(DatabaseAPI._mined_project_repo_endpoint(repo, ci_service))
 
     ###################################
     # Email Subscriber REST methods
@@ -433,8 +555,23 @@ class DatabaseAPI(object):
     # Account REST methods
     ###################################
 
-    def insert_account(self, account) -> Response:
-        return self._insert(DatabaseAPI._accounts_endpoint(), account, 'account')
+    def create_account(self, email: str, role: list = None) -> Response:
+        """
+       Create an account with given email and role. Return token in Response if succeed.
+       :param email: email address.
+       :param role: default to ['user'].
+       :return: The response object.
+       """
+        token = secrets.token_urlsafe()
+        while self.filter_account_for_token(token):
+            token = secrets.token_urlsafe()
+        if role is None:
+            role = ['user']
+        account = {'email': email, 'roles': role, 'token': token, 'password': ''}
+        response = self._insert(DatabaseAPI._accounts_endpoint(), account, 'account')
+        if response.ok:
+            response._content = json.dumps(account).encode('utf-8')
+        return response
 
     def find_account(self, email: str, error_if_not_found: bool = True) -> Response:
         log.debug('Trying to find account with email {}.'.format(email))
@@ -573,11 +710,32 @@ class DatabaseAPI(object):
         log.debug('Trying to bulk insert {} {}.'.format(len(entities), plural_entity_name))
         # Insert the entities in chunks to avoid a 413 Request Entity Too Large error.
         for chunk in DatabaseAPI._chunks(entities, 100):
-            resp = self._post(endpoint, chunk)
+            list_for_insertion = []
+            list_of_build_ids = []
+            for data in chunk:
+                failed_build_id = data['failed_build']['build_id']
+                list_of_build_ids.append(failed_build_id)
+
+            api_filter = '{"failed_build.build_id":{"$in":' + '{}'.format(list_of_build_ids) + '}}'
+            list_of_existing_build_pairs = self.filter_mined_build_pairs(api_filter)
+            for data in chunk:
+                bp_exists = False
+                for bp in list_of_existing_build_pairs:
+                    if data['failed_build']['build_id'] == bp['failed_build']['build_id']:
+                        log.info('Failed Build ID: {} already exists in the database. Skipping insertion.'
+                                 .format(data['failed_build']['build_id']))
+                        bp_exists = True
+                        break
+                if bp_exists:
+                    continue
+                list_for_insertion.append(data)
+            resp = self._post(endpoint, list_for_insertion)
             if resp.status_code == 422:
                 log.error('The', plural_entity_name, 'were not inserted because they failed validation.')
                 log.error(pprint.pformat(chunk))
                 log.error(resp.content)
+            elif resp.status_code == 400:
+                log.error('Buildpairs were not inserted because the list is either empty, or all pairs already exist.')
             yield resp
 
     def _upsert(self, endpoint: Endpoint, entity, singular_entity_name: str = 'entity') -> Response:
@@ -721,12 +879,14 @@ class DatabaseAPI(object):
         return DatabaseAPI._endpoint(DatabaseAPI._MINED_PROJECTS_RESOURCE)
 
     @staticmethod
-    def _mined_project_repo_endpoint(repo: str) -> Endpoint:
+    def _mined_project_repo_endpoint(repo: str, ci_service) -> Endpoint:
         if not isinstance(repo, str):
             raise TypeError
         if not repo:
             raise ValueError
-        return '/'.join([DatabaseAPI._mined_projects_endpoint(), repo])
+        if ci_service not in ['travis', 'github']:
+            raise ValueError
+        return '/'.join([DatabaseAPI._mined_projects_endpoint(), ci_service, repo])
 
     @staticmethod
     def _email_subscribers_endpoint() -> Endpoint:
@@ -751,3 +911,15 @@ class DatabaseAPI(object):
         if not email:
             raise ValueError
         return '/'.join([DatabaseAPI._accounts_endpoint(), email])
+
+    @staticmethod
+    def _logs_endpoint() -> Endpoint:
+        return DatabaseAPI._endpoint(DatabaseAPI._LOGS_RESOURCE)
+
+    @staticmethod
+    def _logs_job_id_endpoint(job_id: str) -> Endpoint:
+        if not isinstance(job_id, str):
+            raise TypeError
+        if not job_id:
+            raise ValueError
+        return '/'.join([DatabaseAPI._logs_endpoint(), job_id])

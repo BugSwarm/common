@@ -6,7 +6,7 @@ from typing import Callable
 from typing import List
 
 from . import utils as procutils
-from .. import log
+from bugswarm.common import log
 
 
 class ParallelArtifactRunner(object):
