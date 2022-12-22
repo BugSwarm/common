@@ -1,6 +1,7 @@
 # Common Library
 Library of modules used throughout the BugSwarm toolset
 
+**This repository is deprecated. Please click [here](https://github.com/BugSwarm/bugswarm/tree/master/bugswarm/common) for the latest common library.**
 
 ## REST API Usage:
 ```
