@@ -1,16 +1,13 @@
 import subprocess
 
 from typing import Optional
+from typing import Tuple
 
 
 class ShellWrapper(object):
 
-    Command = str
-    ReturnCode = int
-    StreamOr = Optional[str]
-
     @staticmethod
-    def run_commands(*commands: Command, **kwargs) -> (StreamOr, StreamOr, ReturnCode):
+    def run_commands(*commands: str, **kwargs) -> Tuple[Optional[str], Optional[str], int]:
         """
         Run a list of commands sequentially in the same shell environment and wait for the commands to complete.
         All keyword arguments are passed to the subprocess.run function.
@@ -21,7 +18,8 @@ class ShellWrapper(object):
                  can be None depending on the passed values of `stdout` and `stderr`.
         """
         command = ' ; '.join(commands)
-        process = subprocess.run(command, **kwargs)  # Indirectly waits for a return code.
+        # Indirectly waits for a return code.
+        process = subprocess.run(command, **kwargs)
         stdout = process.stdout
         stderr = process.stderr
         # Decode stdout and stderr to strings if needed.

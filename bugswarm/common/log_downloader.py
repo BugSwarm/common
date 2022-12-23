@@ -8,7 +8,7 @@ from typing import List
 from typing import Union
 from urllib.error import URLError
 
-from . import log
+from bugswarm.common import log
 
 _DEFAULT_RETRIES = 3
 
@@ -40,14 +40,15 @@ def download_log(job_id: Union[str, int],
         raise FileExistsError
 
     job_id = str(job_id)
-
-    aws_log_link = 'https://s3.amazonaws.com/archive.travis-ci.org/jobs/{}/log.txt'.format(job_id)
     travis_log_link = 'https://api.travis-ci.org/jobs/{}/log.txt'.format(job_id)
-
-    content = _get_log_from_url(aws_log_link, retries) or _get_log_from_url(travis_log_link, retries)
+    content = _get_log_from_url(travis_log_link, retries)
 
     if not content:
-        return False
+        travis_log_link = 'https://api.travis-ci.com/v3/job/{}/log.txt'.format(job_id)
+        content = _get_log_from_url(travis_log_link, retries)
+        # If this endpoint fails, the log is not on either endpoint and does not exist
+        if not content:
+            return False
 
     with open(destination, 'wb') as f:
         f.write(content)
@@ -111,12 +112,12 @@ def _get_log_from_url(log_url: str, max_retries: int, retry_count: int = 0):
             result = url.read()
             log.info('Downloaded log from {}.'.format(log_url))
             return result
-    except URLError:
-        log.info('Could not download log from {}.'.format(log_url))
+    except URLError as e:
+        log.error('Could not download log from {}.'.format(log_url, e.reason))
         return None
     except ConnectionResetError:
         if retry_count == max_retries:
-            log.info('Could not download log from', log_url, 'after retrying', max_retries, 'times.')
+            log.warning('Could not download log from', log_url, 'after retrying', max_retries, 'times.')
             return None
         log.warning('The server reset the connection. Retrying after', sleep_duration, 'seconds.')
         time.sleep(sleep_duration)

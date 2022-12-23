@@ -6,7 +6,7 @@ from typing import List
 
 import requests
 
-from . import log
+from bugswarm.common import log
 from .shell_wrapper import ShellWrapper
 
 

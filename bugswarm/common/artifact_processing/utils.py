@@ -5,7 +5,7 @@ import os
 import shutil
 
 from ..shell_wrapper import ShellWrapper
-from bugswarm.common.rest_api.database_api import DatabaseAPI
+from ..rest_api.database_api import DatabaseAPI
 
 REPOS_DIR = '/home/travis/build'
 _SANDBOX = 'bugswarm-sandbox'

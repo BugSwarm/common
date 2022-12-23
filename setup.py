@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name='bugswarm-common',
-    version='0.1.15',
+    version='0.2022.11.29',
     url='https://github.com/BugSwarm/common',
     author='BugSwarm',
     author_email='dev.bugswarm@gmail.com',
